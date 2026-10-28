@@ -23,11 +23,79 @@
     <!-- Open Graph images must be absolute URLs, otherwise LinkedIn/WhatsApp cannot build a preview. -->
     <meta property="og:image" content="https://satyajitnayak-portfolio.pages.dev/profile.jpg" />
     <meta property="og:image:alt" content="Satyajit Nayak" />
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="640" />
+    <meta property="og:image:height" content="800" />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="profile:first_name" content="Satyajit" />
+    <meta property="profile:last_name" content="Nayak" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Satyajit Nayak — IT Officer | Full-Stack Developer" />
+    <meta name="twitter:description" content="Practical web applications across UI, APIs, databases and deployment." />
+    <meta name="twitter:image" content="https://satyajitnayak-portfolio.pages.dev/profile.jpg" />
+    <meta name="robots" content="index, follow" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="me" href="https://www.linkedin.com/in/satyajit-nayak-981185247/" />
+    <link rel="me" href="https://github.com/Satya257680" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+    <!--
+      Structured identity data. It is a data block (not executed), so the
+      script-src 'self' CSP does not block it. "sameAs" ties this site to the
+      owner's LinkedIn and GitHub profiles for crawlers and link scanners.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Satyajit Nayak",
+        "url": "https://satyajitnayak-portfolio.pages.dev/",
+        "image": "https://satyajitnayak-portfolio.pages.dev/profile.jpg",
+        "jobTitle": "IT Officer (Full-Stack Developer)",
+        "worksFor": { "@type": "Organization", "name": "Mi Arcus Retails Private Limited" },
+        "alumniOf": { "@type": "CollegeOrUniversity", "name": "Centurion University of Technology and Management" },
+        "address": { "@type": "PostalAddress", "addressLocality": "Ludhiana", "addressRegion": "Punjab", "addressCountry": "IN" },
+        "email": "mailto:satyajit.it.2026@gmail.com",
+        "knowsAbout": ["React", "JavaScript", "Node.js", "Express.js", "MySQL", "SQL", "REST APIs", "SAP"],
+        "sameAs": [
+          "https://www.linkedin.com/in/satyajit-nayak-981185247/",
+          "https://github.com/Satya257680",
+          "https://www.youtube.com/@icon_boy_satyas"
+        ]
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      Static fallback content. Link scanners and the LinkedIn preview bot do not
+      run JavaScript; without this they see an empty page with only a script tag,
+      which looks like a phishing kit. React replaces this block on load.
+    -->
+    <div id="root">
+      <main style="max-width: 760px; margin: 0 auto; padding: 48px 20px; font-family: system-ui, sans-serif; line-height: 1.6">
+        <h1>Satyajit Nayak</h1>
+        <p><strong>IT Officer | Full-Stack Developer</strong> — Mi Arcus Retails Private Limited, Ludhiana, Punjab, India.</p>
+        <p>
+          I build web applications with React, JavaScript, Node.js, Express.js and SQL/MySQL — user interfaces,
+          REST APIs, database design and server deployment for real business workflows.
+        </p>
+        <h2>Projects</h2>
+        <ul>
+          <li><strong>MIARCUS</strong> — enterprise retail operations platform (React, Node.js, MySQL).</li>
+          <li><strong>VistaraX</strong> — visitor management system (Express.js, MySQL, Socket.IO).</li>
+          <li><strong>QR Attendance</strong> — QR-based attendance system.</li>
+          <li><strong>Calculation Platform</strong> — personal calculation workflows.</li>
+        </ul>
+        <h2>Education</h2>
+        <p>B.Tech, Computer Science &amp; Engineering — Centurion University of Technology and Management.</p>
+        <h2>Contact</h2>
+        <ul>
+          <li>Email: <a href="mailto:satyajit.it.2026@gmail.com">satyajit.it.2026@gmail.com</a></li>
+          <li>LinkedIn: <a href="https://www.linkedin.com/in/satyajit-nayak-981185247/">linkedin.com/in/satyajit-nayak-981185247</a></li>
+          <li>GitHub: <a href="https://github.com/Satya257680">github.com/Satya257680</a></li>
+          <li><a href="/Satyajit_Nayak_Resume.pdf">Resume (PDF)</a></li>
+        </ul>
+      </main>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

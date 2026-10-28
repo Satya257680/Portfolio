@@ -62,8 +62,8 @@ export default function Hero() {
             <p className="hero__intro">{profile.intro}</p>
 
             <div className="hero__actions">
-              <a href={profile.resumeFile} download className="btn btn--primary">
-                Download Resume <Icon name="download" size={18} />
+              <a href={profile.resumeFile} target="_blank" rel="noopener noreferrer" className="btn btn--primary">
+                View Resume <Icon name="external" size={18} />
               </a>
               <a href="#projects" className="btn btn--outline">
                 View My Work <Icon name="arrowRight" size={18} />

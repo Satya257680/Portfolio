@@ -14,3 +14,13 @@
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+# Resume opens in the browser's PDF viewer instead of being force-downloaded.
+# Forced downloads from a new domain are a common malware-distribution signal.
+/Satyajit_Nayak_Resume.pdf
+  Content-Type: application/pdf
+  Content-Disposition: inline; filename="Satyajit_Nayak_Resume.pdf"
+  Cache-Control: public, max-age=3600
+
+/.well-known/security.txt
+  Content-Type: text/plain; charset=utf-8

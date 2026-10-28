@@ -56,8 +56,8 @@ export default function Navbar({ theme, onToggleTheme }) {
             </li>
           ))}
           <li className="navbar__menu-resume">
-            <a href={profile.resumeFile} download className="btn btn--outline btn--small">
-              Download Resume <Icon name="download" size={16} />
+            <a href={profile.resumeFile} target="_blank" rel="noopener noreferrer" className="btn btn--outline btn--small">
+              View Resume <Icon name="external" size={16} />
             </a>
           </li>
         </ul>
@@ -74,8 +74,8 @@ export default function Navbar({ theme, onToggleTheme }) {
             <span className="theme-toggle__knob" aria-hidden="true" />
             <Icon name="moon" size={14} className="theme-toggle__moon" />
           </button>
-          <a href={profile.resumeFile} download className="btn btn--outline btn--small navbar__resume">
-            Download Resume <Icon name="download" size={16} />
+          <a href={profile.resumeFile} target="_blank" rel="noopener noreferrer" className="btn btn--outline btn--small navbar__resume">
+            View Resume <Icon name="external" size={16} />
           </a>
           <button
             type="button"

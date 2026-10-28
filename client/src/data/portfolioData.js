@@ -135,7 +135,8 @@ export const projects = [
     description:
       'Centralized platform for workforce and multi-store operations: users/roles, stores, departments, checklists, action points, billing, daily collections, sales teams, visit planning, announcements and reports.',
     tags: ['React', 'Node.js', 'MySQL'],
-    links: { live: 'https://rytual2.miarcus.com', repo: 'https://github.com/Satya257680/miarcus' },
+    // The live app is a company login portal — not linked publicly (visitors can't log in, and it exposes an internal URL).
+    links: { live: null, repo: 'https://github.com/Satya257680/miarcus' },
   },
   {
     id: 'vistarax',
@@ -218,7 +219,7 @@ export const certifications = [
     title: 'Avalanche India Hackathon',
     subtitle: 'Blockchain dApp',
     date: 'Sep 2024',
-    text: 'Decentralized web app using Avalanche, MetaMask and Bitcoin APIs — wallet authentication, on-chain transactions and balance verification.',
+    text: 'Hackathon dApp built on the Avalanche network — Web3 sign-in, transaction handling and balance checks through public blockchain APIs.',
   },
 ];
 

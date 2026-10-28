@@ -1,0 +1,5 @@
+# Security contact for satyajitnayak-portfolio.pages.dev (RFC 9116)
+Contact: mailto:satyajit.it.2026@gmail.com
+Expires: 2027-10-28T00:00:00.000Z
+Preferred-Languages: en, hi
+Canonical: https://satyajitnayak-portfolio.pages.dev/.well-known/security.txt
