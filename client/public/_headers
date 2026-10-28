@@ -1,0 +1,16 @@
+# Cloudflare Pages response headers (copied into dist/ by Vite at build time).
+# The Express/Helmet policy in server/src/app.js does NOT apply to the static
+# Pages site, so the equivalent policy is declared here.
+#
+# If you deploy the Express API on another origin and set VITE_API_BASE,
+# add that origin to connect-src, e.g.:  connect-src 'self' https://api.example.com
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

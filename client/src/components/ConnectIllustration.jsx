@@ -35,13 +35,13 @@ export default function ConnectIllustration() {
         <g transform="translate(70 18) skewY(-6)">
           <rect width="220" height="150" rx="10" fill="#0b1024" stroke="#6d7dff" strokeOpacity="0.7" strokeWidth="2" />
           <rect x="8" y="8" width="204" height="134" rx="6" fill="url(#scr)" />
-          <text x="22" y="54" fill="#fff" fontFamily="Poppins, sans-serif" fontSize="17" fontWeight="600" fontStyle="italic">
+          <text x="22" y="54" fill="#fff" fontFamily="system-ui, sans-serif" fontSize="17" fontWeight="600" fontStyle="italic">
             Let’s
           </text>
-          <text x="22" y="80" fill="#fff" fontFamily="Poppins, sans-serif" fontSize="17" fontWeight="600" fontStyle="italic">
+          <text x="22" y="80" fill="#fff" fontFamily="system-ui, sans-serif" fontSize="17" fontWeight="600" fontStyle="italic">
             Build Something
           </text>
-          <text x="22" y="106" fill="#fff" fontFamily="Poppins, sans-serif" fontSize="17" fontWeight="600" fontStyle="italic">
+          <text x="22" y="106" fill="#fff" fontFamily="system-ui, sans-serif" fontSize="17" fontWeight="600" fontStyle="italic">
             Amazing Together
           </text>
           <text x="176" y="34" fill="#c7d2fe" fontFamily="monospace" fontSize="13">

@@ -51,9 +51,10 @@
   --grad-text: linear-gradient(90deg, #6d8bff 0%, #8b5cf6 55%, #a855f7 100%);
   --blur: blur(18px) saturate(150%);
 
-  --font-display: 'Poppins', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-script: 'Great Vibes', 'Brush Script MT', cursive;
+  /* System font stacks only: no requests to fonts.googleapis.com / fonts.gstatic.com. */
+  --font-display: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-script: 'Segoe Script', 'Brush Script MT', 'Snell Roundhand', cursive;
 
   --r-sm: 10px;
   --r-md: 14px;
