@@ -22,6 +22,18 @@ export const profile = {
   currentLocation: 'Ludhiana, Punjab, India',
   homeLocation: 'Balasore, Odisha, India',
 };
+// Contact section content and fallback contact details.
+// Set email to your preferred public contact email when ready.
+export const contact = {
+  title: 'Let’s Connect',
+  heading: 'Let’s Connect',
+  subtitle: 'Have a project, opportunity, or idea to discuss?',
+  description:
+    'I’m open to discussing full-stack development, useful technology solutions, collaborations, and relevant career opportunities.',
+  email: null,
+  location: 'Ludhiana, Punjab, India',
+};
+
 export const socials = [
   { id: 'linkedin', label: 'LinkedIn', handle: 'linkedin.com/in/satyajit-nayak-981185247', url: 'https://www.linkedin.com/in/satyajit-nayak-981185247/' },
   { id: 'github', label: 'GitHub', handle: 'github.com/Satya257680', url: 'https://github.com/Satya257680' },
