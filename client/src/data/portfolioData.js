@@ -10,9 +10,8 @@ export const profile = {
   headline: 'IT Officer | Full Stack Developer',
   navSubtitle: 'Full Stack Developer',
   availability: 'Available for Opportunities',
-  intro:
-    'I build scalable web applications using React, Node.js, Express.js and SQL, with a focus on real-world business solutions. Currently working at Mi Arcus Retails Private Limited, building and maintaining enterprise applications.',
-  photo: '/profile.jpg',
+ intro:
+  'I’m Satyajit Nayak, an IT Officer and Full Stack Developer at Mi Arcus Retails Private Limited. I work at the intersection of business operations and technology, supporting enterprise applications, maintaining IT systems, and improving day-to-day workflows. I also use AI tools in my daily routine to explore ideas, troubleshoot technical issues, learn new technologies, improve my coding workflow, and solve problems more efficiently. I believe in combining human creativity, technical expertise, and AI to build smarter solutions while continuously learning and growing as a technology professional.',
   avatar: '/avatar.jpg',
   photoAlt: 'Satyajit Nayak in a leather jacket at India Gate, New Delhi, in the evening',
   resumeFile: '/Satyajit_Nayak_Resume.pdf',
@@ -53,45 +52,76 @@ export const navLinks = [
 export const heroInfo = [
   { icon: 'pin', color: 'violet', label: 'Location', lines: ['Ludhiana, Punjab, India', 'From Balasore, Odisha'] },
   { icon: 'briefcase', color: 'blue', label: 'Current Role', lines: ['IT Officer (Full Stack Developer)', 'Mi Arcus Retails Private Limited'] },
-  { icon: 'cap', color: 'cyan', label: 'Education', lines: ['B.Tech CSE', 'Centurion University'] },
+  { icon: 'cap', color: 'cyan', label: 'Education', lines: ['B.Tech CSE', 'Centurion University of Technology and ma'] },
 ];
 
 // Job start date — the "months of experience" stat is calculated from this, so it stays accurate.
 export const experienceStart = '2026-07-09';
 
+
 export const about = {
   paragraphs: [
-    'I’m Satyajit Nayak, an IT Officer and full-stack developer at Mi Arcus Retails Private Limited. I enjoy building and maintaining business applications, working across the frontend and backend, database design, and server deployment.',
-    'I’m passionate about creating clean, efficient and user-friendly solutions that solve real problems.',
+    'I’m Satyajit Nayak, an IT Officer and Full Stack Developer at Mi Arcus Retails Private Limited. Originally from Balasore, Odisha, India, I’m currently based in Ludhiana, Punjab, India, where I work with the company to support IT operations, develop enterprise applications, and improve business workflows through technology.',
+
+    'I completed my schooling in Odisha and pursued my B.Tech in Computer Science and Engineering at Centurion University. I’m a fast learner who enjoys exploring new technologies, adapting to challenges, and continuously improving my technical, analytical, and problem-solving skills.',
   ],
+
   more: [
-    'Day to day I work with React and JavaScript interfaces, Node.js/Express REST APIs and SQL/MySQL databases — implementing role-aware workflows, forms, dashboards, exports and validation, and supporting company-server releases and production issues.',
-    'Outside work I run a small YouTube channel, SATYA CREATION, with short videos made to put a smile on your face — plus a walkthrough of the Mi Arcus Portal.',
+    'At Mi Arcus Retails Private Limited, I work across IT operations and full-stack development. My day-to-day responsibilities include developing React and JavaScript interfaces, building Node.js and Express.js REST APIs, working with SQL/MySQL databases, implementing role-aware workflows, dashboards, forms, reports, exports, and validation, and supporting company-server deployments and production issues.',
+
+    'I use AI tools in my daily workflow to explore ideas, understand unfamiliar technologies, troubleshoot errors, improve code, compare implementation approaches, and learn more efficiently. I see AI as a practical assistant that complements human creativity, critical thinking, testing, and technical decision-making.',
+
+    'My projects include enterprise management applications, visitor management systems, QR-based attendance solutions, database-driven platforms, dashboards, and productivity tools. I enjoy working across the development lifecycle, from understanding requirements and designing interfaces to developing APIs, managing databases, testing functionality, and deploying applications.',
+
+    'LinkedIn is where I share my professional journey, experience, technical skills, education, and career interests while connecting with recruiters and technology professionals. GitHub showcases my code, repositories, software projects, and technical experiments, allowing others to explore how I approach development and problem-solving.',
+
+    'Instagram is part of my personal and creative online presence, where I share photos and moments from my life. Facebook helps me stay connected with friends, family, and my wider social circle, keeping my personal connections separate from my professional activities.',
+
+    'I run a YouTube channel called SATYA CREATION, where I create short videos intended to entertain people and put a smile on their faces. I also share a walkthrough of the Mi Arcus Portal, combining my technical experience with my interest in creating useful digital content.',
+
+    'WhatsApp provides a direct way to contact me for professional discussions, collaboration, project-related communication, and relevant opportunities. Together, my social media accounts reflect my professional growth, coding journey, personal interests, creativity, and willingness to connect with others.',
+
+    'I believe in continuous learning, consistency, creativity, and solving real-world problems with a practical mindset. My long-term goal is to grow as a technology professional, contribute to meaningful products, and build reliable, user-friendly solutions that make a real difference.',
   ],
+
   traits: [
     { icon: 'bulb', color: 'amber', title: 'Problem Solver', text: 'I enjoy breaking down complex problems into simple solutions.' },
     { icon: 'chart', color: 'blue', title: 'Continuous Learner', text: 'Always exploring new technologies and improving my skills.' },
     { icon: 'team', color: 'green', title: 'Team Player', text: 'Collaborate effectively and contribute to meaningful projects.' },
-    { icon: 'target', color: 'pink', title: 'Goal', text: 'To work at Google / Microsoft / Amazon by the age of 25.' },
+    { 
+  icon: 'target',
+  color: 'pink',
+  title: 'Career Growth',
+  text: 'Focused on continuous growth, taking on new challenges, and building impactful technology solutions.'
+},
   ],
 };
 
-// `logo` = key in brandIcons.js, or a custom icon name handled in SkillLogo.jsx
+
+ // `logo` = key in brandIcons.js, or a custom icon name handled in SkillLogo.jsx
 export const skills = [
   { name: 'HTML5', logo: 'html5', group: 'Frontend' },
   { name: 'CSS3', logo: 'css3', group: 'Frontend' },
   { name: 'JavaScript', logo: 'javascript', group: 'Frontend' },
   { name: 'React.js', logo: 'react', group: 'Frontend' },
+
+  { name: 'Java', logo: 'java', group: 'Backend' },
+  { name: 'Spring Boot', logo: 'springboot', group: 'Backend' },
   { name: 'Node.js', logo: 'nodedotjs', group: 'Backend' },
   { name: 'Express.js', logo: 'express', group: 'Backend' },
+  { name: 'REST APIs', logo: 'api', group: 'Backend' },
+
+  { name: 'DSA', logo: 'code', group: 'Programming' },
+
   { name: 'MySQL', logo: 'mysql', group: 'Database' },
   { name: 'SQL', logo: 'sql', group: 'Database' },
-  { name: 'REST APIs', logo: 'api', group: 'Backend' },
+
   { name: 'Git', logo: 'git', group: 'Tools' },
   { name: 'GitHub', logo: 'github', group: 'Tools' },
   { name: 'Postman', logo: 'postman', group: 'Tools' },
   { name: 'VS Code', logo: 'vscode', group: 'Tools' },
   { name: 'IntelliJ IDEA', logo: 'intellijidea', group: 'Tools' },
+
   { name: 'SAP', logo: 'sap', group: 'Additional' },
   { name: 'Excel', logo: 'excel', group: 'Additional' },
   { name: 'Word', logo: 'word', group: 'Additional' },
@@ -99,31 +129,76 @@ export const skills = [
 
 // Shown when "View All Skills" is opened
 export const skillDetails = {
-  Frontend: ['HTML5', 'CSS3', 'JavaScript', 'React.js', 'Responsive UI development'],
-  Backend: ['Node.js', 'Express.js', 'REST APIs'],
-  Database: ['SQL', 'MySQL', 'CRUD operations', 'Relational data handling'],
-  Tools: ['VS Code', 'IntelliJ IDEA', 'Git', 'GitHub', 'Postman'],
-  Additional: ['SAP', 'Microsoft Excel', 'Microsoft Word'],
+  Frontend: [
+    'HTML5',
+    'CSS3',
+    'JavaScript',
+    'React.js',
+    'Responsive UI development',
+  ],
+
+  Backend: [
+    'Java',
+    'Spring Boot',
+    'Node.js',
+    'Express.js',
+    'REST APIs',
+  ],
+
+  Programming: [
+    'Data Structures and Algorithms (DSA)',
+    'Problem-solving',
+    'Object-oriented programming',
+  ],
+
+  Database: [
+    'SQL',
+    'MySQL',
+    'CRUD operations',
+    'Relational data handling',
+  ],
+
+  Tools: [
+    'VS Code',
+    'IntelliJ IDEA',
+    'Git',
+    'GitHub',
+    'Postman',
+  ],
+
+  Additional: [
+    'SAP',
+    'Microsoft Excel',
+    'Microsoft Word',
+  ],
 };
+
 
 export const experience = [
   {
-    role: 'IT Officer (Full Stack Development Responsibilities)',
+    role: 'IT Officer (Full Stack Developer Responsibilities)',
     company: 'Mi Arcus Retails Private Limited',
     period: 'Jul 2026 – Present',
     current: true,
     points: [
-      'Develop and maintain centralized business applications for multi-store operations.',
-      'Work with React.js, Node.js, Express.js and MySQL to build and deploy business applications.',
-      'Design and implement modules for users, stores, reports, checklists, action points and more.',
-      'Support server deployment, troubleshoot issues and improve system reliability.',
+      'Develop and maintain the company’s centralized web-based business applications to support retail operations and internal workflows.',
+      'Build responsive and user-friendly interfaces using React.js, JavaScript, HTML, and CSS, with a focus on usability and consistent design.',
+      'Develop and maintain backend services and REST APIs using Node.js and Express.js to support application features and business processes.',
+      'Manage application data using MySQL, including database queries, CRUD operations, data validation, and integration between frontend and backend systems.',
+      'Develop and enhance business modules such as user management, departments, stores, checklists, action points, reports, announcements, and operational tracking.',
+      'Implement role-based access, form validation, filtering, data exports, and other features to improve application functionality and workflow accuracy.',
+      'Deploy website updates to company servers, troubleshoot frontend, backend, API, and database issues, and verify application functionality after releases.',
+      'Use AI-assisted development tools to investigate errors, explore technical solutions, understand unfamiliar concepts, and improve coding efficiency while testing changes before implementation.',
     ],
   },
 ];
 
+
 /**
- * Projects. `preview` picks the illustrated card header (see ProjectPreview.jsx).
- * To use a real screenshot instead, put it in client/public/projects/ and set `image: '/projects/name.png'`.
+ * Featured projects for the portfolio.
+ * `preview` selects the illustrated card artwork in ProjectPreview.jsx.
+ * `image` can point to a real project screenshot in client/public/projects/.
+ * `brand` can be used to display a project-specific brand mark.
  */
 export const projects = [
   {
@@ -132,12 +207,16 @@ export const projects = [
     subtitle: 'Enterprise Retail Operations Platform',
     preview: 'dashboard',
     image: null,
+    brand: 'MI ARCUS',
     description:
-      'Centralized platform for workforce and multi-store operations: users/roles, stores, departments, checklists, action points, billing, daily collections, sales teams, visit planning, announcements and reports.',
-    tags: ['React', 'Node.js', 'MySQL'],
-    // The live app is a company login portal — not linked publicly (visitors can't log in, and it exposes an internal URL).
-    links: { live: null, repo: 'https://github.com/Satya257680/miarcus' },
+      'A centralized retail operations platform supporting multi-store business workflows. The system brings together user and role management, departments, stores, checklists, action points, billing, daily collections, sales teams, visit planning, announcements, and reports in one application.',
+    tags: ['React.js', 'Node.js', 'Express.js', 'MySQL'],
+    links: {
+      live: 'https://rytual2.miarcus.com/',
+      repo: 'https://github.com/Satya257680/miarcus',
+    },
   },
+
   {
     id: 'vistarax',
     name: 'VistaraX',
@@ -145,47 +224,59 @@ export const projects = [
     preview: 'visitors',
     image: null,
     description:
-      'Visitor check-in/check-out with searchable records, role-based access, dashboard insights, exports, real-time Socket.IO notifications and JWT authentication.',
-    tags: ['Express.js', 'MySQL', 'Socket.IO'],
-    links: { live: null, repo: 'https://github.com/Satya257680/Vistarax' },
+      'A web-based visitor management application for recording and tracking visitor check-ins and check-outs. It includes searchable visitor records, role-based access, dashboard insights, data exports, JWT-based authentication, and real-time notifications using Socket.IO.',
+    tags: ['Node.js', 'Express.js', 'MySQL', 'Socket.IO', 'JWT'],
+    links: {
+      live: null,
+      repo: 'https://github.com/Satya257680/Vistarax',
+    },
   },
+
   {
     id: 'qr-attendance',
     name: 'QR Attendance',
-    subtitle: 'QR Based Attendance System',
+    subtitle: 'QR-Based Attendance System',
     preview: 'qr',
     image: null,
-    description: 'An attendance management project built around QR-based attendance workflows.',
-    tags: ['React', 'Node.js', 'MySQL'],
-    // https://github.com/Satya257680/QR-Attendance was not publicly reachable when checked — paste it here once public.
-    links: { live: null, repo: null },
+    description:
+      'An attendance management project built around QR-code-based attendance workflows. The project focuses on making attendance recording more convenient through QR interactions and a web-based interface, with an emphasis on organized attendance data.',
+    tags: ['React.js', 'Node.js', 'MySQL', 'QR Code'],
+    links: {
+      live: null,
+      repo: null,
+    },
   },
+
   {
     id: 'calculation-platform',
     name: 'Calculation Platform',
     subtitle: 'Personal Calculation Platform',
     preview: 'calculator',
     image: null,
-    description: 'A personal calculation platform focused on practical calculation workflows.',
-    tags: ['React', 'JavaScript', 'SQL'],
-    // https://github.com/Satya257680/CalculationPlatform was not publicly reachable when checked — paste it here once public.
-    links: { live: null, repo: null },
+    description:
+      'A personal web application designed to bring practical calculation workflows into a simple, accessible interface. It focuses on clear user interactions, responsive presentation, and structured handling of calculation-related inputs and results.',
+    tags: ['React.js', 'JavaScript', 'SQL'],
+    links: {
+      live: null,
+      repo: null,
+    },
   },
 ];
 
-export const moreProjectsUrl = 'https://github.com/Satya257680?tab=repositories';
+export const moreProjectsUrl =
+  'https://github.com/Satya257680?tab=repositories';
 
 export const education = [
   {
     qualification: 'B.Tech — Computer Science & Engineering',
     institution: 'Centurion University of Technology and Management',
-    period: '2022 – Present',
-    result: 'CGPA: 8.59',
+    period: '2022 – 2026',
+    result: 'CGPA: 8.6',
   },
   {
     qualification: 'Intermediate — Science (CHSE)',
     institution: 'Bahanaga Higher Secondary School, Balasore',
-    period: '2022',
+    period: '2020 -2022',
     result: '71.33%',
   },
   {
