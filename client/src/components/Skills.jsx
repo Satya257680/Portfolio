@@ -12,7 +12,7 @@ export default function Skills() {
         <SectionTitle
           id="skills"
           icon="gear"
-          title="Technical Skills"
+          title="Tech Stack"
           action={
             <button
               type="button"

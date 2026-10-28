@@ -7,12 +7,13 @@ export const profile = {
   name: 'Satyajit Nayak',
   firstName: 'Satyajit',
   lastName: 'Nayak',
-  headline: 'IT Officer | Full Stack Developer',
+  headline: 'IT Officer (Full Stack Developer responsibilities)',
   navSubtitle: 'Full Stack Developer',
   availability: 'Available for Opportunities',
  intro:
   'I’m Satyajit Nayak, an IT Officer and Full Stack Developer at Mi Arcus Retails Private Limited. I work at the intersection of business operations and technology, supporting enterprise applications, maintaining IT systems, and improving day-to-day workflows. I also use AI tools in my daily routine to explore ideas, troubleshoot technical issues, learn new technologies, improve my coding workflow, and solve problems more efficiently. I believe in combining human creativity, technical expertise, and AI to build smarter solutions while continuously learning and growing as a technology professional.',
   avatar: '/avatar.jpg',
+  photo: '/profile.jpg',
   photoAlt: 'Satyajit Nayak in a leather jacket at India Gate, New Delhi, in the evening',
   resumeFile: '/Satyajit_Nayak_Resume.pdf',
   quote: 'Building scalable solutions for real-world problems.',
@@ -52,7 +53,7 @@ export const navLinks = [
 export const heroInfo = [
   { icon: 'pin', color: 'violet', label: 'Location', lines: ['Ludhiana, Punjab, India', 'From Balasore, Odisha'] },
   { icon: 'briefcase', color: 'blue', label: 'Current Role', lines: ['IT Officer (Full Stack Developer)', 'Mi Arcus Retails Private Limited'] },
-  { icon: 'cap', color: 'cyan', label: 'Education', lines: ['B.Tech CSE', 'Centurion University of Technology and ma'] },
+  { icon: 'cap', color: 'cyan', label: 'Education', lines: ['B.Tech CSE', 'Centurion University of Technology and Management'] },
 ];
 
 // Job start date — the "months of experience" stat is calculated from this, so it stays accurate.
@@ -206,11 +207,11 @@ export const projects = [
     name: 'MIARCUS',
     subtitle: 'Enterprise Retail Operations Platform',
     preview: 'dashboard',
-    image: null,
+    image: '/projects/miarcus-dashboard.png',
     brand: 'MI ARCUS',
     description:
-      'A centralized retail operations platform supporting multi-store business workflows. The system brings together user and role management, departments, stores, checklists, action points, billing, daily collections, sales teams, visit planning, announcements, and reports in one application.',
-    tags: ['React.js', 'Node.js', 'Express.js', 'MySQL'],
+      'A large, centralized retail operations platform built to support day-to-day workflows across multiple stores. It brings together user and role management, departments, designations, stores, checklists and submissions, action points, billing, daily collections, sales teams, visit planning, announcements, galleries, and operational reports. The application connects React-based dashboards and forms with Node.js/Express REST APIs and MySQL data storage, with authenticated access, role-aware permissions, server-side validation, filtering, exports, and operational workflows designed to keep business information organized and accessible.',
+    tags: ['React.js', 'Node.js', 'Express.js', 'MySQL', 'JWT Authentication', 'Role-Based Access'],
     links: {
       live: 'https://rytual2.miarcus.com/',
       repo: 'https://github.com/Satya257680/miarcus',
@@ -289,7 +290,7 @@ export const education = [
 
 export const certifications = [
   {
-    icon: 'medal',
+    icon: 'sap',
     color: 'amber',
     title: 'SAP Global Certification',
     subtitle: 'ERP Fundamentals & ABAP Development',

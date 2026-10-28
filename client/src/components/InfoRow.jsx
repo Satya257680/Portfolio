@@ -2,6 +2,7 @@ import { certifications, education, languages } from '../data/portfolioData.js';
 import { Glyph } from './SocialIcon.jsx';
 import Icon from './Icon.jsx';
 import SectionTitle from './SectionTitle.jsx';
+import SkillLogo from './SkillLogo.jsx';
 
 // Three-column band: Education · Certifications & Achievements · Languages
 export default function InfoRow() {
@@ -34,7 +35,7 @@ export default function InfoRow() {
             {certifications.map((c) => (
               <li key={c.title}>
                 <span className={`cert-list__icon tone-text--${c.color}`} aria-hidden="true">
-                  {c.icon === 'geeksforgeeks' ? <Glyph id="geeksforgeeks" size={26} /> : <Icon name={c.icon} size={26} />}
+                  {c.icon === 'geeksforgeeks' ? <Glyph id="geeksforgeeks" size={26} /> : c.icon === 'sap' ? <SkillLogo name="sap" size={30} /> : <Icon name={c.icon} size={26} />}
                 </span>
                 <div>
                   <h3>{c.title}</h3>

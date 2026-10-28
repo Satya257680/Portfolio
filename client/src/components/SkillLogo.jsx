@@ -2,6 +2,24 @@ import { brands } from '../data/brandIcons.js';
 
 // Brand logos (Simple Icons) plus a few hand-drawn ones that Simple Icons doesn't include.
 const custom = {
+  java: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#E76F00" d="M12.1 1.2c2.7 2.1-2.5 4.1-1.7 6.1.4 1.1 2.2 1.7 2.2 3.2 0 1.1-.8 1.9-1.8 2.5.5-1.2-.1-2.1-1.1-3.1C7.5 7.8 8.4 5.7 12.1 1.2Z"/>
+      <path fill="#5382A1" d="M6.3 14.3c-2.1.5-3.3 1.2-3.3 2.1 0 1.7 4.1 2.8 9 2.8s9-1.1 9-2.8c0-.9-1.2-1.6-3.3-2.1 1.1.5 1.7 1 1.7 1.5 0 1.1-3.3 1.9-7.4 1.9s-7.4-.8-7.4-1.9c0-.5.6-1 1.7-1.5Z"/>
+      <path fill="#5382A1" d="M6.8 12.1c-1.5.5-2.3 1-2.3 1.6 0 1.2 3.3 2 7.5 2s7.5-.8 7.5-2c0-.6-.8-1.1-2.3-1.6.6.4.9.7.9 1 0 .8-2.7 1.4-6.1 1.4s-6.1-.6-6.1-1.4c0-.3.3-.6.9-1Z"/>
+    </svg>
+  ),
+  springboot: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#6DB33F" d="M12 2.2c-4.9 0-8.9 4-8.9 8.9 0 4.1 2.8 7.6 6.6 8.6-.7-1.2-1-2.5-.9-3.8-1.7-1-2.9-2.7-3.2-4.7 1.4 1.7 3.1 2.5 5.1 2.5 3.7 0 6.8-3 6.8-6.8 0-1.2-.3-2.4-.9-3.4 1.6 1.6 2.5 3.8 2.5 6.2 0 5-4.1 9.1-9.1 9.1-.3 0-.7 0-1-.1A8.9 8.9 0 1 0 12 2.2Z"/>
+      <path fill="#6DB33F" d="M14.2 1.5c.2 2.2-.7 4-2.5 5.5-1.2 1-2.1 2-2.2 3.5 2.9-.8 5.6-3.1 4.7-9Z"/>
+    </svg>
+  ),
+  code: (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m8 5-6 7 6 7M16 5l6 7-6 7M14 3l-4 18"/>
+    </svg>
+  ),
   vscode: (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path fill="#0065A9" d="M17.6 1.2 9.3 8.8 4.2 4.9 2 6v12l2.2 1.1 5.1-3.9 8.3 7.6L22 20.6V3.4l-4.4-2.2Z" />

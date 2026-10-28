@@ -12,7 +12,7 @@ export default function Experience() {
             {job.current ? <span className="job__present">Present</span> : null}
             <div className="job__head">
               <span className="company-logo" aria-hidden="true">
-                MA
+                <img src="/projects/miarcus-logo.png" alt="" />
               </span>
               <div>
                 <h3>{job.role}</h3>
