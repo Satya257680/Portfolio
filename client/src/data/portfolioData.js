@@ -30,7 +30,10 @@ export const contact = {
   subtitle: 'Have a project, opportunity, or idea to discuss?',
   description:
     'I’m open to discussing full-stack development, useful technology solutions, collaborations, and relevant career opportunities.',
-  email: null,
+  email: 'satyajit.it.2026@gmail.com',
+  phone: '+91 7327096390',
+  phoneHref: 'tel:+917327096390',
+  whatsapp: 'https://wa.me/917327096390',
   location: 'Ludhiana, Punjab, India',
 };
 
