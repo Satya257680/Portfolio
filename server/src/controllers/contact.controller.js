@@ -1,5 +1,6 @@
 import { config } from '../config.js';
 import { getPool, isDatabaseReady } from '../db.js';
+import { notifyContactMessage } from '../services/notifications.js';
 import { validateContact } from '../validators/contact.validator.js';
 
 // GET /api/contact/status — lets the frontend show the form only when it can really be stored.
@@ -33,6 +34,10 @@ export async function createContact(req, res, next) {
        VALUES (?, ?, ?, ?, ?, ?)`,
       [data.name, data.email, data.subject || null, data.message, ip || null, ua || null],
     );
+
+    // Email the owner (and a receipt to the visitor) in the background. The message is already
+    // stored, so an email-provider outage never loses it; delivery status goes to email_delivery_logs.
+    notifyContactMessage({ id: result.insertId, ...data });
 
     return res.status(201).json({ ok: true, id: result.insertId, message: 'Message received.' });
   } catch (err) {

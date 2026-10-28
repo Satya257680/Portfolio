@@ -35,6 +35,27 @@ export const contact = {
   phoneHref: 'tel:+917327096390',
   whatsapp: 'https://wa.me/917327096390',
   location: 'Ludhiana, Punjab, India',
+
+  // "Let's Connect" section
+  eyebrow: 'Get in touch',
+  intro:
+    'I’m always open to discussing new opportunities, interesting projects, or just having a chat about technology. Whether you’re a recruiter, developer, or just curious about my work — feel free to reach out. I’d love to hear from you! 🚀',
+  detailsNote: 'Feel free to reach out through any of the following channels. I usually respond within 24 hours.',
+  badges: [
+    { icon: 'bolt', tone: 'violet', top: 'Open to', bottom: 'Opportunities' },
+    { icon: 'team', tone: 'blue', top: 'Let’s Build', bottom: 'Something Amazing' },
+    { icon: 'code', tone: 'violet', top: 'Collaboration', bottom: 'Always Welcome' },
+  ],
+  features: [
+    { icon: 'briefcase', tone: 'blue', title: 'Open to Opportunities', text: 'Full-time / Contract / Freelance' },
+    { icon: 'team', tone: 'blue', title: 'Collaboration', text: 'Let’s build something great' },
+    { icon: 'bolt', tone: 'violet', title: 'Quick Response', text: 'Usually within 24 hours' },
+    { icon: 'code', tone: 'violet', title: 'All Major Platforms', text: 'Email · LinkedIn · GitHub · WhatsApp' },
+  ],
+  // Live chat: visitors verify their email, then chat on the dedicated /chat page.
+  chatPath: '/chat',
+  chatGreeting:
+    'Hi! 👋\nI’m Satyajit Nayak, a Full Stack Developer.\n\nFeel free to ask me anything about my work, projects, skills, or opportunities.',
 };
 
 export const socials = [

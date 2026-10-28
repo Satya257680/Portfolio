@@ -2,13 +2,15 @@
   "name": "satyajit-portfolio-server",
   "version": "1.0.0",
   "private": true,
-  "description": "Express + MySQL API for the portfolio contact form; also serves the React build in production.",
+  "description": "Express + MySQL API for the portfolio contact form, live chat (Socket.IO) and email notifications; also serves the React build in production.",
   "type": "module",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "db:init": "node src/scripts/initDb.js",
+    "db:migrate": "node src/scripts/initDb.js",
+    "admin:create": "node src/scripts/createAdmin.js",
     "test": "vitest run"
   },
   "engines": {
@@ -21,9 +23,13 @@
     "express-rate-limit": "^7.4.1",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.3",
-    "mysql2": "^3.11.5"
+    "mysql2": "^3.11.5",
+    "nodemailer": "^6.10.1",
+    "socket.io": "^4.8.4"
   },
   "devDependencies": {
+    "socket.io-client": "^4.8.4",
+    "supertest": "^7.3.1",
     "vitest": "^5.0.5"
   }
 }

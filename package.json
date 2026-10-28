@@ -2,14 +2,17 @@
   "name": "satyajit-nayak-portfolio",
   "version": "1.0.0",
   "private": true,
-  "description": "Portfolio of Satyajit Nayak — React (Vite) frontend, Node.js/Express API, MySQL storage for contact messages.",
+  "description": "Portfolio of Satyajit Nayak — React (Vite) frontend, Node.js/Express API, MySQL storage for contact messages and a WhatsApp-style live chat with email notifications.",
   "scripts": {
     "install:all": "npm install --prefix client && npm install --prefix server",
     "dev:client": "npm run dev --prefix client",
     "dev:server": "npm run dev --prefix server",
     "build": "npm run build --prefix client",
     "start": "npm start --prefix server",
-    "db:init": "npm run db:init --prefix server"
+    "db:init": "npm run db:init --prefix server",
+    "db:migrate": "npm run db:migrate --prefix server",
+    "admin:create": "npm run admin:create --prefix server",
+    "test": "npm test --prefix server"
   },
   "engines": {
     "node": ">=18"
