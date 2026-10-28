@@ -7,11 +7,13 @@ export const profile = {
   name: 'Satyajit Nayak',
   firstName: 'Satyajit',
   lastName: 'Nayak',
-  headline: 'IT Officer (Full Stack Developer responsibilities)',
+  headline: 'IT Officer | Full Stack Developer',
   navSubtitle: 'Full Stack Developer',
   availability: 'Available for Opportunities',
- intro:
-  'I’m Satyajit Nayak, an IT Officer and Full Stack Developer at Mi Arcus Retails Private Limited. I work at the intersection of business operations and technology, supporting enterprise applications, maintaining IT systems, and improving day-to-day workflows. I also use AI tools in my daily routine to explore ideas, troubleshoot technical issues, learn new technologies, improve my coding workflow, and solve problems more efficiently. I believe in combining human creativity, technical expertise, and AI to build smarter solutions while continuously learning and growing as a technology professional.',
+
+  intro:
+    'At Mi Arcus Retails Private Limited, I work on developing and maintaining web-based business applications that support retail operations and internal workflows. My work spans frontend development, backend APIs, database management, and application deployment, with a focus on reliability, usability, and solving practical business problems. I also use AI tools in my daily workflow to explore technical solutions, troubleshoot issues, understand new concepts, and improve development efficiency while carefully reviewing and testing the results.',
+
   avatar: '/avatar.jpg',
   photo: '/profile.jpg',
   photoAlt: 'Satyajit Nayak in a leather jacket at India Gate, New Delhi, in the evening',
@@ -20,15 +22,6 @@ export const profile = {
   currentLocation: 'Ludhiana, Punjab, India',
   homeLocation: 'Balasore, Odisha, India',
 };
-
-export const contact = {
-  email: 'satyajit.it.2026@gmail.com',
-  phone: '+91 73270 96390',
-  phoneHref: 'tel:+917327096390',
-  whatsapp: 'https://wa.me/917327096390',
-  location: 'Ludhiana, Punjab, India',
-};
-
 export const socials = [
   { id: 'linkedin', label: 'LinkedIn', handle: 'linkedin.com/in/satyajit-nayak-981185247', url: 'https://www.linkedin.com/in/satyajit-nayak-981185247/' },
   { id: 'github', label: 'GitHub', handle: 'github.com/Satya257680', url: 'https://github.com/Satya257680' },
