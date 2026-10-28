@@ -1,7 +1,31 @@
-// Creates the contact_messages table using the credentials in server/.env.
-// The database itself must already exist (or the user must be allowed to create it).
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import mysql from 'mysql2/promise';
 import { config } from '../config.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+function getTlsOptions() {
+  const configuredCaPath = process.env.DB_SSL_CA;
+  const configuredCaContent = process.env.DB_SSL_CA_CONTENT;
+  const defaultCaPath = path.resolve(__dirname, '../../certs/tidb-ca.pem');
+
+  let ca;
+  if (configuredCaContent) {
+    ca = configuredCaContent.replace(/\\n/g, '\n');
+  } else if (configuredCaPath && fs.existsSync(configuredCaPath)) {
+    ca = fs.readFileSync(configuredCaPath, 'utf8');
+  } else if (fs.existsSync(defaultCaPath)) {
+    ca = fs.readFileSync(defaultCaPath, 'utf8');
+  }
+
+  return {
+    minVersion: 'TLSv1.2',
+    rejectUnauthorized: true,
+    ...(ca ? { ca } : {}),
+  };
+}
 
 const TABLE_SQL = `
 CREATE TABLE IF NOT EXISTS contact_messages (
@@ -21,21 +45,23 @@ CREATE TABLE IF NOT EXISTS contact_messages (
 
 async function main() {
   const { database, ...conn } = config.db;
-  const connection = await mysql.createConnection(conn);
+  const connection = await mysql.createConnection({
+    ...conn,
+    ssl: getTlsOptions(),
+  });
+
   try {
-    await connection.query(
-      `CREATE DATABASE IF NOT EXISTS \`${database.replace(/`/g, '')}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
-    );
-  } catch (e) {
-    console.warn(`[db:init] could not create database (it may already exist): ${e.code}`);
+    // TiDB users may not have CREATE DATABASE privileges. The database should
+    // already exist in TiDB Cloud; create only the application table.
+    await connection.changeUser({ database });
+    await connection.query(TABLE_SQL);
+    console.log(`[db:init] table contact_messages is ready in database "${database}"`);
+  } finally {
+    await connection.end();
   }
-  await connection.changeUser({ database });
-  await connection.query(TABLE_SQL);
-  console.log(`[db:init] table contact_messages is ready in database "${database}"`);
-  await connection.end();
 }
 
 main().catch((err) => {
-  console.error('[db:init] failed:', err.code || err.message);
+  console.error('[db:init] failed:', err.code || err.name, err.message);
   process.exit(1);
 });

@@ -24,3 +24,5 @@ pnpm-debug.log*
 .vscode/
 .DS_Store
 Thumbs.db
+# TiDB CA certificate
+server/certs/
