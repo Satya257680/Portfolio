@@ -1723,7 +1723,26 @@
 /* Password controls and secure chat attachments */
 .cpassword-row { display:flex; align-items:stretch; gap:8px; }
 .cpassword-row input { flex:1; min-width:0; }
-.cpassword-toggle { border:1px solid var(--c-border, #38527f); border-radius:10px; background:rgba(255,255,255,.06); color:inherit; padding:0 12px; cursor:pointer; font:inherit; }
+/* Eye / eye-off icon button beside each password input (one per field). */
+.cpassword-toggle {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--c-line-strong, #38527f);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--c-text-2, #b8c8ec);
+  cursor: pointer;
+  font: inherit;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+.cpassword-toggle:hover { background: var(--c-hover, rgba(48, 102, 214, 0.18)); color: var(--c-text, #f2f6ff); }
+.cpassword-toggle.is-shown { color: var(--c-accent, #7aa8ff); border-color: var(--c-accent, #7aa8ff); }
+.chat-page .cpassword-toggle:focus-visible { outline: 2px solid #7cc0ff; outline-offset: 2px; }
+.cpassword-toggle .icon { pointer-events: none; }
 .cfile-input { display:none; }
 .cattachment { display:grid; gap:5px; min-width:150px; }
 .cattachment__name { display:flex; align-items:center; gap:7px; overflow-wrap:anywhere; font-weight:600; }

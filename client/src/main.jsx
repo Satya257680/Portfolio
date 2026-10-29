@@ -4,6 +4,7 @@ import App from './App.jsx';
 import './styles/tokens.css';
 import './styles/global.css';
 import './styles/components.css';
+import './styles/welcome.css';
 
 // The chat is a separate page (/chat for visitors, /admin for the owner) and is loaded on demand,
 // so the portfolio itself does not download the realtime client.

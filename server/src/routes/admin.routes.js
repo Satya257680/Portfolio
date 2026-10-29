@@ -15,8 +15,9 @@ const loginLimiter = rateLimit({
 });
 
 router.post('/auth/login', loginLimiter, admin.login);
-router.post('/auth/request-reset', loginLimiter, admin.requestAdminPasswordReset);
-router.post('/auth/reset-password', loginLimiter, admin.resetAdminPassword);
+// Reset endpoints share the IP limiter (successful requests are not counted); the controller also
+// caps codes per email (CHAT_CODES_PER_EMAIL per 15 minutes). Registered once — a duplicate
+// registration was unreachable and has been removed.
 router.post('/auth/request-reset', loginLimiter, admin.requestAdminPasswordReset);
 router.post('/auth/reset-password', loginLimiter, admin.resetAdminPassword);
 

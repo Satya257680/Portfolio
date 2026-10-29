@@ -1,0 +1,309 @@
+/* =====================================================================
+   Welcome / loading screen (first visit of a session).
+   Uses the portfolio's own dark navy + blue/purple neon palette and system fonts.
+   The same classes style the static pre-JavaScript copy in index.html
+   (shown only when public/boot.js sets <html data-welcome="1">).
+   ===================================================================== */
+.welcome {
+  --w-bg: #050a1f;
+  --w-text: #f4f6ff;
+  --w-text-2: #c2c9e8;
+  --w-blue: #4f7cff;
+  --w-violet: #8b5cf6;
+  --w-purple: #a855f7;
+
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background-color: var(--w-bg);
+  background-image:
+    radial-gradient(900px 620px at 50% 38%, rgba(59, 91, 255, 0.22), transparent 65%),
+    radial-gradient(700px 600px at 0% 20%, rgba(147, 51, 234, 0.32), transparent 60%),
+    radial-gradient(800px 640px at 100% 90%, rgba(147, 51, 234, 0.3), transparent 60%),
+    radial-gradient(700px 500px at 100% 0%, rgba(59, 91, 255, 0.28), transparent 60%);
+  color: var(--w-text);
+  font-family: var(--font-display, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif);
+  color-scheme: dark;
+  opacity: 1;
+  transition: opacity var(--welcome-fade, 450ms) ease, visibility var(--welcome-fade, 450ms);
+}
+
+.welcome--leaving {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Static copy: hidden unless boot.js allowed it; fades away on its own if JavaScript never loads,
+   so the plain HTML content underneath is always reachable. */
+.welcome--static {
+  display: none;
+}
+html[data-welcome='1'] .welcome--static {
+  display: grid;
+  animation: welcome-bail 0.5s ease 12s forwards;
+}
+@keyframes welcome-bail {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* ---------- background ---------- */
+.welcome__bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.welcome__orb {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(140, 120, 255, 0.35);
+  background: radial-gradient(circle at 70% 40%, rgba(124, 58, 237, 0.35), rgba(37, 52, 160, 0.12) 55%, transparent 75%);
+  box-shadow:
+    inset 0 0 60px rgba(139, 92, 246, 0.25),
+    0 0 80px -20px rgba(99, 102, 241, 0.55);
+}
+.welcome__orb--left {
+  width: min(62vw, 640px);
+  aspect-ratio: 1;
+  left: max(-38vw, -420px);
+  top: 6%;
+}
+.welcome__orb--right {
+  width: min(52vw, 560px);
+  aspect-ratio: 1;
+  right: max(-30vw, -340px);
+  bottom: -6%;
+  background: radial-gradient(circle at 30% 50%, rgba(59, 91, 255, 0.32), rgba(124, 58, 237, 0.14) 55%, transparent 75%);
+}
+
+.welcome__curves {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.welcome__glow {
+  opacity: 0.28;
+}
+
+/* ---------- content ---------- */
+.welcome__content {
+  position: relative;
+  width: min(100%, 860px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.welcome__avatar {
+  position: relative;
+  width: clamp(116px, 30vw, 168px);
+  aspect-ratio: 1;
+  margin-bottom: clamp(26px, 5vh, 40px);
+}
+.welcome__photo {
+  position: absolute;
+  inset: 9%;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 3px solid rgba(99, 132, 255, 0.95);
+  box-shadow:
+    0 0 0 4px rgba(10, 16, 44, 0.9),
+    0 0 26px 4px rgba(79, 124, 255, 0.75),
+    0 0 60px 8px rgba(139, 92, 246, 0.45);
+  background: #0b1438;
+}
+/* profile.jpg is a portrait; zoom in on the face and shoulders for the round frame. */
+.welcome__photo img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: 50% 22%;
+  transform: scale(1.45);
+  transform-origin: 48% 30%;
+}
+
+/* Broken neon arcs around the photo (pure CSS, no images). */
+.welcome__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: rgba(96, 165, 250, 0.95);
+  border-left-color: rgba(168, 85, 247, 0.9);
+  filter: drop-shadow(0 0 6px rgba(96, 140, 255, 0.9));
+  animation: welcome-spin 3.2s linear infinite;
+}
+.welcome__ring--outer {
+  inset: -9%;
+  border-width: 2px;
+  border-top-color: transparent;
+  border-left-color: transparent;
+  border-right-color: rgba(96, 165, 250, 0.75);
+  border-bottom-color: rgba(129, 140, 248, 0.55);
+  animation-duration: 5.5s;
+  animation-direction: reverse;
+}
+.welcome__ring--outer::before,
+.welcome__ring--outer::after {
+  content: '';
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #7aa8ff;
+  box-shadow: 0 0 10px 2px rgba(96, 165, 250, 0.9);
+}
+.welcome__ring--outer::before {
+  top: -4px;
+  left: 50%;
+}
+.welcome__ring--outer::after {
+  bottom: 12%;
+  right: 4%;
+  background: #a78bfa;
+}
+
+@keyframes welcome-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.welcome__kicker {
+  margin: 0;
+  font-size: clamp(1rem, 3.6vw, 1.75rem);
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  padding-left: 0.24em; /* balances the trailing letter-spacing */
+  color: var(--w-text);
+}
+
+.welcome__title {
+  margin: 0.15em 0 0;
+  font-size: clamp(1.75rem, 7.4vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: 0.01em;
+  color: var(--w-text);
+  text-shadow: 0 0 24px rgba(99, 102, 241, 0.25);
+}
+.welcome__accent {
+  display: inline-block;
+  background: linear-gradient(90deg, #4f8cff 0%, #6d6bff 50%, #a855f7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 14px rgba(124, 58, 237, 0.35));
+}
+
+.welcome__role {
+  margin: 0.55em 0 0;
+  font-size: clamp(0.98rem, 3.4vw, 1.5rem);
+  font-weight: 600;
+  background: linear-gradient(90deg, #60a5fa, #818cf8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.welcome__track {
+  position: relative;
+  width: min(100%, 560px);
+  height: clamp(16px, 2.6vw, 24px);
+  margin-top: clamp(28px, 5vh, 44px);
+  border-radius: 999px;
+  background: rgba(30, 41, 99, 0.55);
+  border: 1px solid rgba(110, 140, 255, 0.22);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+.welcome__bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #a855f7 0%, #6366f1 45%, #3b82f6 80%, #60a5fa 100%);
+  box-shadow:
+    0 0 14px rgba(99, 102, 241, 0.85),
+    0 0 28px rgba(59, 130, 246, 0.5);
+}
+/* Before JavaScript: no fake percentage, just a soft moving light. */
+.welcome__track--pending .welcome__bar {
+  width: 32%;
+  animation: welcome-pending 1.6s ease-in-out infinite alternate;
+}
+@keyframes welcome-pending {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(310%);
+  }
+}
+
+.welcome__meta {
+  width: min(100%, 560px);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 14px;
+  font-size: clamp(0.72rem, 2.4vw, 0.95rem);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: #9fb0e6;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- reduced motion / low-powered devices ---------- */
+.welcome--reduced .welcome__ring,
+.welcome--lite .welcome__ring {
+  animation: none;
+}
+.welcome--lite .welcome__glow,
+.welcome--lite .welcome__orb {
+  display: none;
+}
+.welcome--lite .welcome__ring {
+  filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome__ring,
+  .welcome__track--pending .welcome__bar {
+    animation: none;
+  }
+  .welcome__track--pending .welcome__bar {
+    transform: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome__meta {
+    letter-spacing: 0.14em;
+  }
+  .welcome__orb--left {
+    top: 2%;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .welcome__avatar {
+    width: 96px;
+    margin-bottom: 14px;
+  }
+  .welcome__track {
+    margin-top: 18px;
+  }
+}

@@ -39,6 +39,11 @@
     <link rel="me" href="https://github.com/Satya257680" />
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <!--
+      Decides before first paint whether the welcome screen may show (portfolio only, once per tab
+      session). External file because the CSP is script-src 'self'. Tiny and non-blocking in effect.
+    -->
+    <script src="/boot.js"></script>
+    <!--
       Structured identity data. It is a data block (not executed), so the
       script-src 'self' CSP does not block it. "sameAs" ties this site to the
       owner's LinkedIn and GitHub profiles for crawlers and link scanners.
@@ -71,6 +76,13 @@
       which looks like a phishing kit. React replaces this block on load.
     -->
     <div id="root">
+      <!--
+        Welcome screen shown before JavaScript runs (styled by src/styles/welcome.css, visible only
+        when boot.js sets data-welcome="1"). Generated from WelcomeBackdrop/WelcomeContent in
+        src/components/WelcomeLoader.jsx — keep in sync. React replaces it with the animated
+        version; without JavaScript it fades out after 12 s and the content below stays readable.
+      -->
+      <div class="welcome welcome--static" aria-hidden="true"><div class="welcome__bg" aria-hidden="true"><span class="welcome__orb welcome__orb--left"></span><span class="welcome__orb welcome__orb--right"></span><svg class="welcome__curves" viewBox="0 0 1440 900" preserveAspectRatio="none" focusable="false"><defs><linearGradient id="welcome-curve-a" x1="0" x2="1"><stop offset="0" stop-color="#3b6bff" stop-opacity="0"></stop><stop offset="0.5" stop-color="#5b7cff" stop-opacity="0.9"></stop><stop offset="1" stop-color="#a855f7" stop-opacity="0"></stop></linearGradient><linearGradient id="welcome-curve-b" x1="0" x2="1"><stop offset="0" stop-color="#a855f7" stop-opacity="0"></stop><stop offset="0.55" stop-color="#c084fc" stop-opacity="0.85"></stop><stop offset="1" stop-color="#3b82f6" stop-opacity="0"></stop></linearGradient></defs><g fill="none" stroke-linecap="round"><path class="welcome__glow" d="M820 120c180 110 300 150 450 110s150-60 170-60" stroke="url(#welcome-curve-a)" stroke-width="10"></path><path d="M820 120c180 110 300 150 450 110s150-60 170-60" stroke="url(#welcome-curve-a)" stroke-width="1.6"></path><path class="welcome__glow" d="M0 330c200 40 360 160 470 310s210 240 330 260" stroke="url(#welcome-curve-b)" stroke-width="10"></path><path d="M0 330c200 40 360 160 470 310s210 240 330 260" stroke="url(#welcome-curve-b)" stroke-width="1.6"></path><path class="welcome__glow" d="M980 900c120-170 260-240 460-260" stroke="url(#welcome-curve-b)" stroke-width="10"></path><path d="M980 900c120-170 260-240 460-260" stroke="url(#welcome-curve-b)" stroke-width="1.6"></path><path d="M60 760c240-40 420 10 560 140" stroke="url(#welcome-curve-a)" stroke-width="1.2" opacity="0.6"></path><path d="M1160 560c90-10 200 0 280 30" stroke="url(#welcome-curve-a)" stroke-width="1.2" opacity="0.6"></path></g></svg></div><div class="welcome__content"><div class="welcome__avatar"><span class="welcome__ring" aria-hidden="true"></span><span class="welcome__ring welcome__ring--outer" aria-hidden="true"></span><span class="welcome__photo"><img src="/profile.jpg" alt="" width="640" height="800" decoding="async"/></span></div><p class="welcome__kicker">WELCOME TO</p><p class="welcome__title">SATYAJIT’S <span class="welcome__accent">PORTFOLIO</span></p><p class="welcome__role">IT Officer | Full Stack Developer</p><div class="welcome__track welcome__track--pending" role="progressbar" aria-label="Loading Satyajit’s portfolio" aria-valuemin="0" aria-valuemax="100"><span class="welcome__bar"></span></div><div class="welcome__meta" aria-hidden="true"><span class="welcome__status">INITIALISING</span><span class="welcome__pct"></span></div></div></div>
       <main style="max-width: 760px; margin: 0 auto; padding: 48px 20px; font-family: system-ui, sans-serif; line-height: 1.6">
         <h1>Satyajit Nayak</h1>
         <p><strong>IT Officer | Full-Stack Developer</strong> — Mi Arcus Retails Private Limited, Ludhiana, Punjab, India.</p>

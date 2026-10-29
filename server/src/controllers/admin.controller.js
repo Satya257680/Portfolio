@@ -2,10 +2,10 @@ import { getPool } from '../db.js';
 import { audit, createSession, ensureOwnerUser, revokeSession, revokeUserSessions } from '../services/auth.service.js';
 import { ChatError } from '../services/chat.service.js';
 import { disconnectUser, emitToConversation, isUserOnline } from '../services/realtime.js';
-import { dummyPasswordCheck, verifyPassword, hashPassword, randomCode, hashCode, safeEqualHex } from '../utils/security.js';
-import { config } from '../config.js';
-import { isEmailConfigured, sendEmail } from '../services/email/mailer.js';
-import { verificationEmail } from '../services/email/templates.js';
+import { dummyPasswordCheck, verifyPassword, hashPassword, randomCode, randomToken, hashCode, safeEqualHex } from '../utils/security.js';
+import { config, isProduction } from '../config.js';
+import { logEvent, redactEmail, sendEmail } from '../services/email/mailer.js';
+import { adminPasswordResetEmail } from '../services/email/templates.js';
 import { clean, parseId, validateEmail } from '../validators/chat.validator.js';
 import { handle } from './chat.controller.js';
 
@@ -44,26 +44,65 @@ export const login = handle(async (req, res) => {
   });
 });
 
+// Public wording for every reset request. It never claims the email was delivered: "sent" from the
+// provider only means accepted, and unknown emails get the same text (no account enumeration).
+export const ADMIN_RESET_GENERIC =
+  'If this email belongs to an active admin account, a reset code is on its way. It can take a few minutes — check Inbox, Spam and All Mail. Only the newest code works.';
+
 // POST /api/admin/auth/request-reset — reset code is sent only to a registered admin email.
+// Every step is logged as a redacted "admin_reset.*" JSON line (never the code or a password).
 export const requestAdminPasswordReset = handle(async (req, res) => {
+  const ref = randomToken(6); // correlates the log lines of one request
   const email = validateEmail(req.body?.email);
+  logEvent('admin_reset.requested', { ref, to: email ? redactEmail(email) : '[invalid-address]' });
   if (!email) throw new ChatError(422, 'Enter a valid email address.');
   const pool = getPool();
   const [admins] = await pool.query('SELECT id, email, is_active FROM admin_users WHERE email = ? LIMIT 1', [email]);
-  const generic = 'If this is an active admin email, a reset code has been sent.';
-  if (!admins[0] || !admins[0].is_active) return res.json({ ok: true, message: generic });
+  if (!admins[0] || !admins[0].is_active) {
+    // Same public response as success, but the reason is kept in the server log.
+    logEvent('admin_reset.ineligible', {
+      ref,
+      to: redactEmail(email),
+      reason: admins[0] ? 'admin_inactive' : 'not_registered',
+      hint: 'a reset code is only emailed to an active admin_users row; see the "[admin] active admin accounts" startup line',
+    }, 'warn');
+    return res.json({ ok: true, message: ADMIN_RESET_GENERIC });
+  }
+  const adminId = admins[0].id;
   const [[recent]] = await pool.query(`SELECT COUNT(*) AS n FROM chat_verification_codes WHERE email = ? AND purpose = 'admin_password_reset' AND created_at > UTC_TIMESTAMP() - INTERVAL 15 MINUTE`, [email]);
-  if (Number(recent.n) >= config.chat.codesPerEmailPerWindow) throw new ChatError(429, 'Too many reset requests. Please wait 15 minutes.');
-  await pool.query(`UPDATE chat_verification_codes SET used_at = UTC_TIMESTAMP() WHERE email = ? AND purpose = 'admin_password_reset' AND used_at IS NULL`, [email]);
+  if (Number(recent.n) >= config.chat.codesPerEmailPerWindow) {
+    logEvent('admin_reset.rate_limited', { ref, adminId, recentCodes: Number(recent.n), limit: config.chat.codesPerEmailPerWindow }, 'warn');
+    throw new ChatError(429, 'Too many reset requests. Please wait 15 minutes and use the newest code you received.');
+  }
+
   const code = randomCode();
   const expiresAt = new Date(Date.now() + config.chat.codeTtlMinutes * 60 * 1000);
   const [ins] = await pool.query(`INSERT INTO chat_verification_codes (email, display_name, code_hash, purpose, expires_at) VALUES (?, 'Portfolio Chat Admin', ?, 'admin_password_reset', ?)`, [email, hashCode(email, code), expiresAt]);
-  const tpl = verificationEmail({ name: 'Portfolio Chat Admin', email, code, ttlMinutes: config.chat.codeTtlMinutes });
+  logEvent('admin_reset.code_created', { ref, adminId, codeId: ins.insertId, expiresAt: expiresAt.toISOString() });
+
+  const tpl = adminPasswordResetEmail({ code, ttlMinutes: config.chat.codeTtlMinutes });
+  logEvent('admin_reset.send_attempt', { ref, adminId, codeId: ins.insertId, provider: config.email.provider, to: redactEmail(email) });
   const result = await sendEmail({ kind: 'admin_password_reset', to: email, relatedType: 'admin_password_reset', relatedId: ins.insertId, idempotencyKey: `admin-reset-${ins.insertId}`, ...tpl });
-  if (result.status === 'sent') return res.json({ ok: true, message: generic });
-  if (result.status === 'skipped' && process.env.NODE_ENV !== 'production') return res.json({ ok: true, message: generic, devCode: code });
+  logEvent('admin_reset.send_result', {
+    ref,
+    adminId,
+    codeId: ins.insertId,
+    status: result.status,
+    providerMessageId: result.providerMessageId || null,
+    category: result.category || null,
+    httpStatus: result.httpStatus || null,
+    attempts: result.attempts ?? null,
+  }, result.status === 'sent' ? 'info' : 'error');
+
+  const devFallback = result.status === 'skipped' && !isProduction();
+  if (result.status === 'sent' || devFallback) {
+    // Only now retire older unused codes, so a failed send never cancels a code that was already emailed.
+    await pool.query(`UPDATE chat_verification_codes SET used_at = UTC_TIMESTAMP() WHERE email = ? AND purpose = 'admin_password_reset' AND used_at IS NULL AND id < ?`, [email, ins.insertId]);
+    return res.json({ ok: true, message: ADMIN_RESET_GENERIC, ...(devFallback ? { devCode: code } : {}) });
+  }
+  // Delivery failed: the new code can never arrive, so retire it and report the failure honestly.
   await pool.query('UPDATE chat_verification_codes SET used_at = UTC_TIMESTAMP() WHERE id = ?', [ins.insertId]);
-  throw new ChatError(502, 'Could not send the reset email. Please try again later.');
+  throw new ChatError(502, `Could not send the reset email right now. Please try again in a few minutes. (Reference: ${ref})`);
 });
 
 // POST /api/admin/auth/reset-password — admin code reset, no existing session required.
@@ -77,14 +116,21 @@ export const resetAdminPassword = handle(async (req, res) => {
   const row = rows[0];
   if (!row || row.attempts >= config.chat.codeMaxAttempts || !safeEqualHex(row.code_hash, hashCode(email, code))) {
     if (row) await pool.query('UPDATE chat_verification_codes SET attempts = attempts + 1 WHERE id = ?', [row.id]);
+    const reason = !row ? 'no_active_code' : row.attempts >= config.chat.codeMaxAttempts ? 'too_many_attempts' : 'code_mismatch';
+    logEvent('admin_reset.verify_failed', { to: redactEmail(email), reason, codeId: row?.id || null }, 'warn');
     throw new ChatError(400, 'That reset code is invalid or has expired.');
   }
   const [updated] = await pool.query('UPDATE admin_users SET password_hash = ?, updated_at = UTC_TIMESTAMP() WHERE email = ? AND is_active = 1', [await hashPassword(password), email]);
-  if (!updated.affectedRows) throw new ChatError(400, 'Unable to reset this admin account.');
+  if (!updated.affectedRows) {
+    logEvent('admin_reset.verify_failed', { to: redactEmail(email), reason: 'admin_not_active', codeId: row.id }, 'warn');
+    throw new ChatError(400, 'Unable to reset this admin account.');
+  }
   await pool.query('UPDATE chat_verification_codes SET used_at = UTC_TIMESTAMP() WHERE id = ?', [row.id]);
   const [admins] = await pool.query('SELECT id FROM admin_users WHERE email = ?', [email]);
-  const [owners] = await pool.query('SELECT id FROM chat_users WHERE is_owner = 1 LIMIT 1');
-  if (owners[0]) await pool.query("UPDATE chat_sessions SET revoked_at = UTC_TIMESTAMP() WHERE admin_user_id = ? AND revoked_at IS NULL", [admins[0].id]);
+  // Sign out every existing session of this admin (all devices) after a password change.
+  if (admins[0]) await pool.query('UPDATE chat_sessions SET revoked_at = UTC_TIMESTAMP() WHERE admin_user_id = ? AND revoked_at IS NULL', [admins[0].id]);
+  await audit(null, 'admin.password_reset', 'admin_user', admins[0]?.id || null);
+  logEvent('admin_reset.completed', { to: redactEmail(email), adminId: admins[0]?.id || null, codeId: row.id });
   res.json({ ok: true, message: 'Admin password reset successfully. Please sign in with your new password.' });
 });
 

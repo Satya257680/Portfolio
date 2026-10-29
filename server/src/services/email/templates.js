@@ -175,6 +175,27 @@ export function verificationEmail({ name, email, code, ttlMinutes }) {
   };
 }
 
+// 3b) Admin password-reset code. Its own wording (the chat verification email talks about opening a
+// chat), and the code is never placed in a URL — the admin types it on the /admin reset screen.
+export function adminPasswordResetEmail({ code, ttlMinutes }) {
+  const adminUrl = `${config.appBaseUrl}/admin`;
+  const bodyHtml = `
+    <p style="margin:0 0 14px;font:15px/1.6 Segoe UI,Roboto,Arial,sans-serif;color:#1f2a44;">A password reset was requested for the Portfolio Chat admin account.</p>
+    <p style="margin:0 0 14px;font:15px/1.6 Segoe UI,Roboto,Arial,sans-serif;color:#1f2a44;">Enter this code on the admin reset screen:</p>
+    <div style="margin:6px 0 16px;padding:14px;background:#e9effa;border-radius:10px;text-align:center;font:700 30px/1.2 Consolas,Menlo,monospace;letter-spacing:8px;color:#1f2a44;">${esc(code)}</div>
+    <p style="margin:0 0 6px;font:14px/1.6 Segoe UI,Roboto,Arial,sans-serif;color:#33405e;">The code expires in ${esc(ttlMinutes)} minutes and can be used once. Requesting another code replaces this one.</p>
+    ${buttons(button(adminUrl, 'Open admin sign-in'))}`;
+  return {
+    subject: `${code} is your Portfolio admin password reset code`,
+    html: layout({
+      heading: 'Reset your admin password',
+      bodyHtml,
+      footer: "If you didn't request this, ignore this email — your password stays the same.",
+    }),
+    text: `A password reset was requested for the Portfolio Chat admin account.\n\nYour reset code is ${code}. It expires in ${ttlMinutes} minutes and can be used once.\n\nAdmin sign-in: ${adminUrl}\n\nIf you didn't request this, ignore this email — your password stays the same.`,
+  };
+}
+
 // 4) Owner notification for a contact-form submission.
 export function ownerContactNotification({ id, name, email, subject, message, sentAt }) {
   const replySubject = encodeURIComponent(`Re: ${subject || 'Your message'}`);

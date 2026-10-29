@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import { contact } from '../data/portfolioData.js';
 import { api } from '../lib/api.js';
+import PasswordToggle from './PasswordToggle.jsx';
 
 function Field({ id, label, error, children }) {
   return (
@@ -49,7 +50,7 @@ export function VisitorVerify({ status, onSignedIn }) {
     <Field id={id} label={label} error={errors[name]}>
       <div className="cpassword-row">
         <input id={id} name={name} type={show ? 'text' : 'password'} autoComplete={autocomplete} value={value} onChange={onChange} minLength={10} maxLength={200} required />
-        <button type="button" className="cpassword-toggle" onClick={toggle} aria-label={show ? 'Hide password' : 'Show password'}>{show ? 'Hide' : 'Show'}</button>
+        <PasswordToggle shown={show} onToggle={toggle} controls={id} />
       </div>
     </Field>
   );
@@ -193,9 +194,13 @@ export function AdminLogin({ onSignedIn }) {
     try { const data = await api('/api/admin/auth/login', { method: 'POST', body: { email: values.email, password: values.password } }); onSignedIn(data.token); }
     catch (err) { setState({ busy: false, message: err.message, tone: 'error' }); }
   };
+  // Also used by "Resend code" on the reset screen. A new request replaces the previous code,
+  // so the newest email is the one to use.
   const requestReset = async (e) => {
-    e.preventDefault(); setState({ busy: true, message: 'Requesting reset code…', tone: '' });
-    try { const data = await api('/api/admin/auth/request-reset', { method: 'POST', body: { email: values.email } }); setDevCode(data.devCode || ''); setMode('reset'); setState({ busy: false, message: data.message, tone: 'success' }); }
+    e?.preventDefault();
+    if (!values.email.trim()) { setMode('forgot'); return setState({ busy: false, message: 'Enter the registered admin email.', tone: 'error' }); }
+    setState({ busy: true, message: 'Requesting reset code…', tone: '' });
+    try { const data = await api('/api/admin/auth/request-reset', { method: 'POST', body: { email: values.email } }); setDevCode(data.devCode || ''); setMode('reset'); setValues((v) => ({ ...v, code: '' })); setState({ busy: false, message: data.message, tone: 'success' }); }
     catch (err) { setState({ busy: false, message: err.message, tone: 'error' }); }
   };
   const resetPassword = async (e) => {
@@ -207,7 +212,7 @@ export function AdminLogin({ onSignedIn }) {
     try { const data = await api('/api/admin/auth/reset-password', { method: 'POST', body: { email: values.email, code: values.code.trim(), password: values.password } }); resetView('login'); setState({ busy: false, message: data.message, tone: 'success' }); setValues((v) => ({ ...v, password: '', confirmPassword: '', code: '' })); }
     catch (err) { setState({ busy: false, message: err.message, tone: 'error' }); }
   };
-  const passwordField = (id, name, label, value, show, toggle, autocomplete) => <Field id={id} label={label}><div className="cpassword-row"><input id={id} name={name} type={show ? 'text' : 'password'} autoComplete={autocomplete} value={value} onChange={onChange} required maxLength={200} /><button type="button" className="cpassword-toggle" onClick={toggle}>{show ? 'Hide' : 'Show'}</button></div></Field>;
+  const passwordField = (id, name, label, value, show, toggle, autocomplete) => <Field id={id} label={label}><div className="cpassword-row"><input id={id} name={name} type={show ? 'text' : 'password'} autoComplete={autocomplete} value={value} onChange={onChange} required maxLength={200} /><PasswordToggle shown={show} onToggle={toggle} controls={id} /></div></Field>;
   return <div className="cgate__card">
     <span className="cgate__icon" aria-hidden="true"><Icon name="lock" size={24} /></span>
     <h1 className="cgate__title">{mode === 'login' ? 'Admin sign-in' : mode === 'forgot' ? 'Forgot admin password?' : 'Reset admin password'}</h1>
@@ -230,7 +235,7 @@ export function AdminLogin({ onSignedIn }) {
       {devCode && <p className="cnote cnote--warn">Development mode code: <strong>{devCode}</strong></p>}
       <p className="cnote">Use at least 12 characters for the admin password.</p>
       <button type="submit" className="cbtn cbtn--primary cbtn--block" disabled={state.busy}>{state.busy ? 'Resetting…' : 'Reset password'}</button>
-      <button type="button" className="clink" onClick={()=>resetView('login')}>Back to sign in</button>
+      <div className="cgate__row"><button type="button" className="clink" onClick={()=>resetView('login')}>Back to sign in</button><button type="button" className="clink" onClick={requestReset} disabled={state.busy}>Resend code</button></div>
     </form>}
     <p className={`cstatus cstatus--${state.tone}`} role="status" aria-live="polite">{state.message}</p>
   </div>;
