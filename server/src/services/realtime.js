@@ -9,6 +9,8 @@ let io = null;
 const onlineCounts = new Map(); // userId -> number of open sockets
 
 export const isUserOnline = (userId) => (onlineCounts.get(Number(userId)) || 0) > 0;
+// Ids of users with at least one live socket (measured presence; used for the admin dashboard).
+export const onlineUserIds = () => [...onlineCounts.keys()];
 
 export function emitToUsers(userIds, event, payload) {
   if (!io) return;

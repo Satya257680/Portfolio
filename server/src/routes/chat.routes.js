@@ -1,10 +1,23 @@
 import express, { Router } from 'express';
 import rateLimit from 'express-rate-limit';
+import { config } from '../config.js';
 import * as auth from '../controllers/chatAuth.controller.js';
 import * as chat from '../controllers/chat.controller.js';
+import { attachmentTooLarge } from '../middleware/errorHandler.js';
 import { requireChatAuth } from '../middleware/chatAuth.js';
 
 const router = Router();
+
+// 10 MB or smaller: a file of exactly config.attachments.maxBytes is accepted.
+function rejectOversizedAttachment(req, res, next) {
+  const declared = Number(req.headers['content-length']);
+  if (Number.isFinite(declared) && declared > config.attachments.maxBytes) {
+    // Do not keep reading a body we will never accept.
+    res.set('Connection', 'close');
+    return attachmentTooLarge(res);
+  }
+  return next();
+}
 
 const limiter = (limit, windowMin, message) =>
   rateLimit({
@@ -43,7 +56,13 @@ router.get('/conversations/:id', chat.getConversation);
 router.patch('/conversations/:id', writeLimiter, chat.patchGroup);
 router.get('/conversations/:id/messages', chat.getMessages);
 router.post('/conversations/:id/messages', messageLimiter, chat.postMessage);
-router.post('/conversations/:id/attachments', writeLimiter, express.raw({ type: 'application/octet-stream', limit: '10mb' }), chat.postAttachment);
+router.post(
+  '/conversations/:id/attachments',
+  writeLimiter,
+  rejectOversizedAttachment, // refuse before reading the body when the declared size is too large
+  express.raw({ type: 'application/octet-stream', limit: config.attachments.maxBytes }), // streamed bodies are capped too
+  chat.postAttachment, // and the controller re-checks the received byte count
+);
 router.get('/attachments/:attachmentId/download', chat.downloadAttachment);
 router.patch('/conversations/:id/read', chat.patchRead);
 router.patch('/conversations/:id/unread', chat.patchUnread);

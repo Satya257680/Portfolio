@@ -1,6 +1,8 @@
 import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import { contact } from '../data/portfolioData.js';
+import AttachmentTooLargeDialog from './AttachmentTooLargeDialog.jsx';
+import { checkAttachment, formatBytes, isTooLargeError } from './attachments.js';
 import Avatar from './Avatar.jsx';
 import { EMOJIS, dayLabel, nameColor, timeOf } from './chatUtils.js';
 
@@ -60,6 +62,7 @@ export default function ChatWindow({
   onBack,
   onSend,
   onUpload,
+  onNotice = () => {},
   onDownload,
   onRetry,
   onDiscard,
@@ -74,7 +77,9 @@ export default function ChatWindow({
   const [text, setText] = useState(() => drafts.get(c.id) || initialDraft || '');
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [uploadBusy, setUploadBusy] = useState(false);
+  const [tooLarge, setTooLarge] = useState(false);
   const fileInputRef = useRef(null);
+  const attachBtnRef = useRef(null);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
   const stickToBottom = useRef(true);
@@ -128,14 +133,27 @@ export default function ChatWindow({
   };
   useEffect(autoGrow, [text]);
 
+  // Size problems open the attachment dialog; every other problem (type, empty file, network,
+  // server error) is a short toast — the dialog is only ever shown for the size limit.
   const chooseFile = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) { window.alert('Attachments must be 10 MB or smaller.'); return; }
-    if (file.type?.startsWith('video/') || /\.(mp4|mov|avi|mkv|webm|mpeg|mpg|m4v|3gp|wmv|flv)$/i.test(file.name)) { window.alert('Video attachments are not allowed.'); return; }
+    const check = checkAttachment(file);
+    if (!check.ok) {
+      if (check.reason === 'too_large') setTooLarge(true);
+      else onNotice(check.message);
+      return;
+    }
     setUploadBusy(true);
-    try { await onUpload(file); } finally { setUploadBusy(false); }
+    try {
+      await onUpload(file);
+    } catch (err) {
+      if (isTooLargeError(err)) setTooLarge(true);
+      else onNotice(err?.message || 'The file could not be sent. Please try again.');
+    } finally {
+      setUploadBusy(false);
+    }
   };
 
   const submit = (e) => {
@@ -334,7 +352,7 @@ export default function ChatWindow({
                       {m.type === 'file' && m.attachment ? (
                         <div className="cattachment">
                           <span className="cattachment__name"><Icon name="file" size={18} /> {m.attachment.name}</span>
-                          <small>{Math.max(1, Math.round(m.attachment.size / 1024))} KB</small>
+                          <small>{formatBytes(m.attachment.size)}</small>
                           <button type="button" className="clink" onClick={() => onDownload(m.attachment)}><Icon name="download" size={15} /> Download</button>
                         </div>
                       ) : <span className="cbubble__text">{m.body}</span>}
@@ -372,8 +390,8 @@ export default function ChatWindow({
           <div className="ccomposer__field">
             <div className="cemoji">
               <input ref={fileInputRef} type="file" className="cfile-input" onChange={chooseFile} aria-label="Choose attachment" />
-              <button type="button" className="cicon-btn cicon-btn--soft" aria-label="Attach file" title="Attach file (max 10 MB, no video)" onClick={() => fileInputRef.current?.click()} disabled={blocked || uploadBusy}>
-                <Icon name="paperclip" size={21} />
+              <button ref={attachBtnRef} type="button" className="cicon-btn cicon-btn--soft" aria-label={uploadBusy ? 'Uploading attachment…' : 'Attach file'} title="Attach file (max 10 MB, no video)" onClick={() => fileInputRef.current?.click()} disabled={blocked || uploadBusy}>
+                {uploadBusy ? <span className="cspinner" aria-hidden="true" /> : <Icon name="paperclip" size={21} />}
               </button>
               <button
                 type="button"
@@ -424,6 +442,7 @@ export default function ChatWindow({
           <Icon name="shield" size={14} /> Private &amp; email-verified. Don’t share passwords, OTPs or sensitive personal details.
         </p>
       ) : null}
+      <AttachmentTooLargeDialog open={tooLarge} onClose={() => setTooLarge(false)} returnFocusRef={attachBtnRef} />
     </section>
   );
 }

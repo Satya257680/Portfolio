@@ -48,11 +48,13 @@ async function systemMessage(conversationId, actor, body) {
   return message;
 }
 
-// GET /api/chat/conversations?filter=all|unread|groups|archived&q=
+// GET /api/chat/conversations?filter=all|unread|groups|archived&type=direct|group&q=
+// Results are always limited to conversations the caller is a member of.
 export const getConversations = handle(async (req, res) => {
   const filter = ['all', 'unread', 'groups', 'archived'].includes(req.query.filter) ? req.query.filter : 'all';
+  const type = ['direct', 'group'].includes(req.query.type) ? req.query.type : null;
   const q = clean(String(req.query.q || '')).slice(0, 80);
-  const conversations = await listConversations(req.auth.userId, { filter, q, isAdmin: req.auth.isAdmin });
+  const conversations = await listConversations(req.auth.userId, { filter, type, q, isAdmin: req.auth.isAdmin });
   res.json({ ok: true, conversations });
 });
 
@@ -142,7 +144,9 @@ export const postAttachment = handle(async (req, res) => {
   if (membership.status === 'closed' && !req.auth.isOwner) throw new ChatError(403, 'This conversation has been closed.');
   const data = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
   if (!data.length) throw new ChatError(400, 'Choose a file to attach.');
-  if (data.length > 10 * 1024 * 1024) throw new ChatError(413, 'Attachments must be 10 MB or smaller.');
+  if (data.length > config.attachments.maxBytes) {
+    throw new ChatError(413, 'Attachments must be 10 MB or smaller.', { code: 'ATTACHMENT_TOO_LARGE', maxBytes: config.attachments.maxBytes });
+  }
   const original = String(req.query.name || 'attachment').split(/[\\/]/).pop().replace(/[\r\n\u0000-\u001f]/g, '').trim().slice(0, 240) || 'attachment';
   const mime = String(req.query.type || 'application/octet-stream').slice(0, 150).toLowerCase();
   const ext = original.includes('.') ? original.split('.').pop().toLowerCase() : '';
@@ -150,7 +154,9 @@ export const postAttachment = handle(async (req, res) => {
   if (mime.startsWith('video/') || blockedExt.has(ext)) throw new ChatError(415, 'This file type is not allowed. Video and executable/script files are blocked.');
   const { message } = await createMessage({ conversationId: id, senderId: req.auth.userId, body: original, type: 'file', reopen: !req.auth.isOwner });
   const pool = getPool();
-  await pool.query('INSERT INTO chat_attachments (conversation_id, message_id, sender_id, file_name, mime_type, file_size, file_data) VALUES (?, ?, ?, ?, ?, ?, ?)', [id, message.id, req.auth.userId, original, mime, data.length, data]);
+  // execute() (prepared statement) sends the file as binary. query() would inline it as hex, doubling the
+  // packet size, so a file at the 10 MB limit could exceed a 16 MB max_allowed_packet and fail.
+  await pool.execute('INSERT INTO chat_attachments (conversation_id, message_id, sender_id, file_name, mime_type, file_size, file_data) VALUES (?, ?, ?, ?, ?, ?, ?)', [id, message.id, req.auth.userId, original, mime, data.length, data]);
   const [rows] = await pool.query(`SELECT msg.id, msg.conversation_id, msg.sender_id, u.display_name AS sender_name, msg.body, msg.message_type, msg.client_message_id, msg.created_at, att.id AS attachment_id, att.file_name AS attachment_name, att.mime_type AS attachment_mime, att.file_size AS attachment_size FROM chat_messages msg JOIN chat_users u ON u.id = msg.sender_id JOIN chat_attachments att ON att.message_id = msg.id WHERE msg.id = ?`, [message.id]);
   const enriched = toMessage(rows[0]);
   await emitToConversation(id, 'message:new', { conversationId: id, message: enriched });

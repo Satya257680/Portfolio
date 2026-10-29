@@ -6,18 +6,19 @@ import './styles/global.css';
 import './styles/components.css';
 import './styles/welcome.css';
 
-// The chat is a separate page (/chat for visitors, /admin for the owner) and is loaded on demand,
-// so the portfolio itself does not download the realtime client.
+// The chat (/chat, visitors) and the owner-only admin panel (/admin) are separate pages loaded on
+// demand, so the portfolio itself downloads neither the realtime client nor any admin code.
 const ChatPage = lazy(() => import('./chat/ChatPage.jsx'));
+const AdminPage = lazy(() => import('./admin/AdminPage.jsx'));
 
 const path = window.location.pathname.replace(/\/+$/, '') || '/';
-const mode = path === '/chat' ? 'visitor' : path === '/admin' ? 'admin' : null;
+const page = path === '/chat' ? 'chat' : path === '/admin' ? 'admin' : null;
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {mode ? (
-      <Suspense fallback={<div className="chat-boot" role="status">Loading chat…</div>}>
-        <ChatPage mode={mode} />
+    {page ? (
+      <Suspense fallback={<div className="chat-boot" role="status">{page === 'admin' ? 'Loading…' : 'Loading chat…'}</div>}>
+        {page === 'admin' ? <AdminPage /> : <ChatPage mode="visitor" />}
       </Suspense>
     ) : (
       <App />

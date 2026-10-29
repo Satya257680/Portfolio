@@ -1,5 +1,7 @@
-// One-time admin setup:  ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='long-password' npm run admin:create
+// One-time admin setup:  ADMIN_EMAIL=satyajit.it.2026@gmail.com ADMIN_PASSWORD='long-password' npm run admin:create
 // Creates the admin, or resets the password if the email already exists. Never seeds a default password.
+// ADMIN_EMAIL must equal ADMIN_OWNER_EMAIL (default: the owner email) — no other account can be an admin.
+// Only a salted scrypt hash is stored; the password itself is never printed or logged.
 import mysql from 'mysql2/promise';
 import { config } from '../config.js';
 import { getTlsOptions } from '../db.js';
@@ -11,6 +13,10 @@ async function main() {
   const password = process.env.ADMIN_PASSWORD || '';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) throw new Error('Set ADMIN_EMAIL to a valid email address.');
   if (password.length < 12) throw new Error('ADMIN_PASSWORD must be at least 12 characters.');
+  // Only the portfolio owner may be an admin (server-enforced on every request as well).
+  if (email !== config.admin.ownerEmail) {
+    throw new Error(`ADMIN_EMAIL must be the owner admin email (${config.admin.ownerEmail}). Set ADMIN_OWNER_EMAIL to change it.`);
+  }
 
   const { database, ...conn } = config.db;
   const ssl = getTlsOptions();

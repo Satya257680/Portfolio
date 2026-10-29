@@ -55,7 +55,7 @@ export async function requireMembership(conversationId, userId) {
   return m;
 }
 
-export async function listConversations(userId, { filter = 'all', q = '', isAdmin = false } = {}) {
+export async function listConversations(userId, { filter = 'all', type = null, q = '', isAdmin = false } = {}) {
   const where = ['m.user_id = ?', 'm.left_at IS NULL'];
   const params = [userId];
   if (isAdmin) {
@@ -63,6 +63,10 @@ export async function listConversations(userId, { filter = 'all', q = '', isAdmi
     else where.push("c.status <> 'archived'");
   }
   if (filter === 'groups') where.push("c.type = 'group'");
+  if (type === 'direct' || type === 'group') {
+    where.push('c.type = ?');
+    params.push(type);
+  }
   if (q) {
     const like = `%${likeEscape(q.slice(0, 80))}%`;
     where.push('(c.title LIKE ? OR ou.display_name LIKE ? OR ou.email LIKE ?)');

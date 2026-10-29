@@ -12,6 +12,7 @@ function preview(c, myId) {
 
 export default function Sidebar({
   isAdmin,
+  scope = null,
   myId,
   conversations,
   listState,
@@ -28,7 +29,8 @@ export default function Sidebar({
   const filters = [
     { id: 'all', label: 'All' },
     { id: 'unread', label: 'Unread' },
-    { id: 'groups', label: 'Groups' },
+    // A scoped list (admin panel) is already only visitor chats or only groups.
+    ...(scope ? [] : [{ id: 'groups', label: 'Groups' }]),
     ...(isAdmin ? [{ id: 'archived', label: 'Archived' }] : []),
   ];
 
@@ -100,7 +102,9 @@ export default function Sidebar({
                     ? 'No groups yet.'
                     : filter === 'archived'
                       ? 'No archived chats.'
-                      : 'No conversations yet.'}
+                      : scope === 'group'
+                        ? 'No private groups yet.'
+                        : 'No conversations yet.'}
             </p>
           </div>
         ) : (

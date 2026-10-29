@@ -20,6 +20,9 @@ d('chat + admin API (integration)', () => {
   const emailB = `bob.${stamp}@example.com`;
   const adminEmail = `admin.${stamp}@example.com`;
   const adminPassword = 'correct-horse-battery-staple';
+  // Only the configured owner email may be an admin; point it at this run's admin account.
+  // Set before the server modules (config) are imported in beforeAll.
+  process.env.ADMIN_OWNER_EMAIL = adminEmail;
   let tokenA;
   let tokenB;
   let adminToken;
@@ -38,7 +41,11 @@ d('chat + admin API (integration)', () => {
     expect(r1.body.devCode).toMatch(/^\d{6}$/);
     const r2 = await api().post('/api/chat/auth/verify').send({ email, code: r1.body.devCode });
     expect(r2.status).toBe(200);
-    return r2.body;
+    // New accounts create a password after verifying; that step returns the session.
+    expect(r2.body.requiresPasswordSetup).toBe(true);
+    const r3 = await api().post('/api/chat/auth/set-password').send({ email, code: r1.body.devCode, password: `${name}-password-1` });
+    expect(r3.status).toBe(200);
+    return r3.body;
   }
 
   beforeAll(async () => {
@@ -107,15 +114,21 @@ d('chat + admin API (integration)', () => {
     expect(w.body.message).toMatch(/attempt/);
     const ok = await api().post('/api/chat/auth/verify').send({ email, code: r1.body.devCode });
     expect(ok.status).toBe(200);
+    // A new account consumes the code when it sets its password; after that the code is dead.
+    const setup = await api().post('/api/chat/auth/set-password').send({ email, code: r1.body.devCode, password: 'code-tester-password' });
+    expect(setup.status).toBe(200);
     const reuse = await api().post('/api/chat/auth/verify').send({ email, code: r1.body.devCode });
     expect(reuse.status).toBe(400);
 
-    const r2 = await api().post('/api/chat/auth/request-verification').send({ name: 'Code Tester', email });
+    // Expiry is checked with a fresh address (the first one now has an account).
+    const email2 = `codes2.${stamp}@example.com`;
+    const r2 = await api().post('/api/chat/auth/request-verification').send({ name: 'Code Tester', email: email2 });
+    expect(r2.body.devCode).toMatch(/^\d{6}$/);
     await pool.query(
       'UPDATE chat_verification_codes SET expires_at = UTC_TIMESTAMP() - INTERVAL 1 MINUTE WHERE email = ? AND used_at IS NULL',
-      [email],
+      [email2],
     );
-    const expired = await api().post('/api/chat/auth/verify').send({ email, code: r2.body.devCode });
+    const expired = await api().post('/api/chat/auth/verify').send({ email: email2, code: r2.body.devCode });
     expect(expired.status).toBe(400);
     const [[row]] = await pool.query('SELECT COUNT(*) AS n FROM chat_verification_codes WHERE code_hash = ?', [r2.body.devCode]);
     expect(Number(row.n)).toBe(0); // codes are stored hashed, never in plaintext

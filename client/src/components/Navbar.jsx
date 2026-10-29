@@ -1,7 +1,11 @@
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { isAdminDevice } from '../admin/adminDevice.js';
 import { navLinks, profile } from '../data/portfolioData.js';
 import useActiveSection from '../hooks/useActiveSection.js';
 import Icon from './Icon.jsx';
+
+// Loaded only when the owner opens it, so visitors never download the admin sign-in code.
+const AdminAccessDialog = lazy(() => import('../admin/AdminAccessDialog.jsx'));
 
 const sectionIds = navLinks.map((l) => l.id);
 
@@ -9,6 +13,11 @@ export default function Navbar({ theme, onToggleTheme }) {
   const active = useActiveSection(sectionIds) || 'home';
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  // Owner-only convenience: the lock appears only in a browser where the owner has signed in to
+  // /admin before. Hiding it is NOT the protection — the server guards /admin and every admin API.
+  const [showAdminLock] = useState(isAdminDevice);
+  const [adminOpen, setAdminOpen] = useState(false);
+  const lockRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -77,6 +86,20 @@ export default function Navbar({ theme, onToggleTheme }) {
           <a href={profile.resumeFile} target="_blank" rel="noopener noreferrer" className="btn btn--outline btn--small navbar__resume">
             View Resume <Icon name="external" size={16} />
           </a>
+          {showAdminLock ? (
+            <button
+              ref={lockRef}
+              type="button"
+              className="navbar__admin"
+              aria-label="Admin access"
+              aria-haspopup="dialog"
+              aria-expanded={adminOpen}
+              title="Admin access"
+              onClick={() => setAdminOpen(true)}
+            >
+              <Icon name="lock" size={18} />
+            </button>
+          ) : null}
           <button
             type="button"
             className="navbar__toggle"
@@ -89,6 +112,11 @@ export default function Navbar({ theme, onToggleTheme }) {
           </button>
         </div>
       </nav>
+      {adminOpen ? (
+        <Suspense fallback={null}>
+          <AdminAccessDialog onClose={() => setAdminOpen(false)} returnFocusRef={lockRef} />
+        </Suspense>
+      ) : null}
     </header>
   );
 }

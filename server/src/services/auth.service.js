@@ -43,22 +43,31 @@ export async function createSession({ userId, kind = 'visitor', adminUserId = nu
   return { token, expiresAt };
 }
 
+// True only for the configured portfolio-owner admin address (case-insensitive).
+export function isOwnerAdminEmail(email) {
+  return Boolean(email) && String(email).trim().toLowerCase() === config.admin.ownerEmail;
+}
+
 // Resolves a bearer token to an authenticated identity, or null.
 export async function resolveSession(token) {
   if (typeof token !== 'string' || token.length < 20 || token.length > 200) return null;
   const [rows] = await getPool().query(
     `SELECT s.id AS session_id, s.kind, s.admin_user_id, s.expires_at,
-            u.id AS user_id, u.display_name, u.email, u.is_owner, u.status
+            u.id AS user_id, u.display_name, u.email, u.is_owner, u.status,
+            a.email AS admin_email, a.is_active AS admin_active
      FROM chat_sessions s
      JOIN chat_users u ON u.id = s.user_id
+     LEFT JOIN admin_users a ON a.id = s.admin_user_id
      WHERE s.token_hash = ? AND s.revoked_at IS NULL AND s.expires_at > UTC_TIMESTAMP()
      LIMIT 1`,
     [sha256(token)],
   );
   const r = rows[0];
   if (!r || r.status === 'blocked') return null;
-  // An admin session is only valid for the owner account.
-  if (r.kind === 'admin' && !r.is_owner) return null;
+  // An admin session is only valid for the owner chat account AND an active admin_users row whose
+  // email is the configured owner email. Re-checked on every request, so deactivating the admin row
+  // (or changing ADMIN_OWNER_EMAIL) ends existing admin sessions immediately.
+  if (r.kind === 'admin' && (!r.is_owner || !Number(r.admin_active) || !isOwnerAdminEmail(r.admin_email))) return null;
   getPool()
     .query(
       `UPDATE chat_sessions SET last_used_at = UTC_TIMESTAMP()
@@ -73,6 +82,7 @@ export async function resolveSession(token) {
     email: r.email,
     isOwner: Boolean(r.is_owner),
     isAdmin: r.kind === 'admin' && Boolean(r.is_owner),
+    adminUserId: r.kind === 'admin' ? r.admin_user_id : null,
     kind: r.kind,
     expiresAt: r.expires_at,
   };
@@ -105,6 +115,10 @@ export async function audit(actorUserId, action, targetType = null, targetId = n
 export async function bootstrapAdminFromEnv() {
   const { bootstrapEmail, bootstrapPassword } = config.admin;
   if (!bootstrapEmail || !bootstrapPassword) return false;
+  if (!isOwnerAdminEmail(bootstrapEmail)) {
+    console.error('[admin] ADMIN_EMAIL is not the owner admin email (ADMIN_OWNER_EMAIL) — admin not created.');
+    return false;
+  }
   const pool = getPool();
   const [rows] = await pool.query('SELECT COUNT(*) AS n FROM admin_users');
   if (Number(rows[0].n) > 0) return false;

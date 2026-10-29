@@ -44,15 +44,13 @@ export async function requestVerification(req, res, next) {
     }
 
     const pool = getPool();
-    const [[existingAccount]] = await pool.query('SELECT password_hash, is_owner FROM chat_users WHERE email = ? LIMIT 1', [data.email]);
+    const [[existingAccount]] = await pool.query('SELECT password_hash, is_owner, status FROM chat_users WHERE email = ? LIMIT 1', [data.email]);
     if (existingAccount?.is_owner) return res.status(403).json({ ok: false, message: 'This address belongs to the site owner. Please use the admin sign-in.' });
-    if (existingAccount?.password_hash) return res.status(409).json({ ok: false, message: 'An account already exists for this email. Please sign in or use Forgot password.' });
-    const [[blocked]] = await pool.query("SELECT COUNT(*) AS n FROM chat_users WHERE email = ? AND status = 'blocked'", [
-      data.email,
-    ]);
-    if (Number(blocked.n) > 0) {
+    // Blocked accounts are refused before the "already exists" check, so a block always reads as a block.
+    if (existingAccount?.status === 'blocked') {
       return res.status(403).json({ ok: false, message: 'This email cannot start a chat. Please use the contact form instead.' });
     }
+    if (existingAccount?.password_hash) return res.status(409).json({ ok: false, message: 'An account already exists for this email. Please sign in or use Forgot password.' });
 
     const [[recent]] = await pool.query(
       `SELECT COUNT(*) AS n FROM chat_verification_codes
@@ -234,26 +232,43 @@ export async function setVisitorPassword(req, res, next) {
   } catch (err) { next(err); }
 }
 
+// Number of visitor reset codes issued for this email in the current 15-minute window.
+export async function recentResetCodes(email) {
+  const [[recent]] = await getPool().query(`SELECT COUNT(*) AS n FROM chat_verification_codes WHERE email = ? AND purpose = 'password_reset' AND created_at > UTC_TIMESTAMP() - INTERVAL 15 MINUTE`, [email]);
+  return Number(recent.n);
+}
+
+// Creates a single-use visitor reset code (only its hash is stored) and emails it to the account owner.
+// Shared by "Forgot password" and the admin "Require password reset" action. Returns
+// { status, code, codeId } — the plaintext code must only ever go to the user's own email
+// (or, in development without a provider, back to that user's own browser), never to an admin.
+export async function issueVisitorResetCode({ email, name }) {
+  const pool = getPool();
+  await pool.query(`UPDATE chat_verification_codes SET used_at = UTC_TIMESTAMP() WHERE email = ? AND purpose = 'password_reset' AND used_at IS NULL`, [email]);
+  const code = randomCode();
+  const expiresAt = new Date(Date.now() + config.chat.codeTtlMinutes * 60 * 1000);
+  const [ins] = await pool.query(`INSERT INTO chat_verification_codes (email, display_name, code_hash, purpose, expires_at) VALUES (?, ?, ?, 'password_reset', ?)`, [email, name, hashCode(email, code), expiresAt]);
+  const tpl = verificationEmail({ name, email, code, ttlMinutes: config.chat.codeTtlMinutes });
+  const result = await sendEmail({ kind: 'chat_password_reset', to: email, relatedType: 'password_reset', relatedId: ins.insertId, idempotencyKey: `password-reset-${ins.insertId}`, ...tpl });
+  return { status: result.status, code, codeId: ins.insertId };
+}
+
 // POST /api/chat/auth/request-reset — always returns a generic message to prevent email enumeration.
+// Verified accounts without a password (never set, or cleared by an admin-required reset) can use
+// this flow to choose one; the emailed code proves ownership of the address.
 export async function requestPasswordReset(req, res, next) {
   try {
     const email = String(req.body?.email || '').trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return res.status(422).json({ ok: false, message: 'Enter a valid email address.' });
     const pool = getPool();
-    const [[user]] = await pool.query('SELECT display_name, password_hash, status, is_owner FROM chat_users WHERE email = ? LIMIT 1', [email]);
+    const [[user]] = await pool.query('SELECT display_name, email_verified_at, status, is_owner FROM chat_users WHERE email = ? LIMIT 1', [email]);
     const generic = 'If this email has a chat account, a reset code has been sent.';
-    if (!user || !user.password_hash || user.status === 'blocked' || user.is_owner) return res.json({ ok: true, message: generic, emailSent: false });
-    const [[recent]] = await pool.query(`SELECT COUNT(*) AS n FROM chat_verification_codes WHERE email = ? AND purpose = 'password_reset' AND created_at > UTC_TIMESTAMP() - INTERVAL 15 MINUTE`, [email]);
-    if (Number(recent.n) >= config.chat.codesPerEmailPerWindow) return res.status(429).json({ ok: false, message: 'Too many reset requests. Please wait 15 minutes.' });
-    await pool.query(`UPDATE chat_verification_codes SET used_at = UTC_TIMESTAMP() WHERE email = ? AND purpose = 'password_reset' AND used_at IS NULL`, [email]);
-    const code = randomCode();
-    const expiresAt = new Date(Date.now() + config.chat.codeTtlMinutes * 60 * 1000);
-    const [ins] = await pool.query(`INSERT INTO chat_verification_codes (email, display_name, code_hash, purpose, expires_at) VALUES (?, ?, ?, 'password_reset', ?)`, [email, user.display_name, hashCode(email, code), expiresAt]);
-    const tpl = verificationEmail({ name: user.display_name, email, code, ttlMinutes: config.chat.codeTtlMinutes });
-    const result = await sendEmail({ kind: 'chat_password_reset', to: email, relatedType: 'password_reset', relatedId: ins.insertId, idempotencyKey: `password-reset-${ins.insertId}`, ...tpl });
-    if (result.status === 'sent') return res.json({ ok: true, emailSent: true, message: generic });
-    if (result.status === 'skipped' && !isProduction()) return res.json({ ok: true, emailSent: false, devCode: code, message: generic });
-    await pool.query('UPDATE chat_verification_codes SET used_at = UTC_TIMESTAMP() WHERE id = ?', [ins.insertId]);
+    if (!user || !user.email_verified_at || user.status === 'blocked' || user.is_owner) return res.json({ ok: true, message: generic, emailSent: false });
+    if ((await recentResetCodes(email)) >= config.chat.codesPerEmailPerWindow) return res.status(429).json({ ok: false, message: 'Too many reset requests. Please wait 15 minutes.' });
+    const { status, code, codeId } = await issueVisitorResetCode({ email, name: user.display_name });
+    if (status === 'sent') return res.json({ ok: true, emailSent: true, message: generic });
+    if (status === 'skipped' && !isProduction()) return res.json({ ok: true, emailSent: false, devCode: code, message: generic });
+    await pool.query('UPDATE chat_verification_codes SET used_at = UTC_TIMESTAMP() WHERE id = ?', [codeId]);
     return res.status(502).json({ ok: false, message: 'Could not send the reset email. Please try again later.' });
   } catch (err) { next(err); }
 }

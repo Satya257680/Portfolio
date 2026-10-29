@@ -330,6 +330,26 @@
   margin-left: 8px;
 }
 
+/* Owner-only admin lock (shown only on a browser where the owner signed in to /admin) */
+.navbar__admin {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--input-bg);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.navbar__admin:hover {
+  color: var(--text);
+  border-color: var(--violet);
+  box-shadow: 0 0 18px -6px var(--violet);
+}
+
 .theme-toggle {
   position: relative;
   display: flex;

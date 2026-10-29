@@ -105,6 +105,7 @@ beforeEach(async () => {
   db.deliveries = [];
   db.audits = [];
   config.env = 'production';
+  config.admin.ownerEmail = ADMIN; // only the owner admin email is eligible for admin resets
   config.email.provider = 'brevo';
   config.email.brevoApiKey = API_KEY;
   config.email.from = 'Portfolio Chat <no-reply@example.com>';
@@ -220,6 +221,7 @@ describe('admin reset — request code', () => {
   });
 
   it('unregistered email: same generic response, no code, no send, reason logged', async () => {
+    config.admin.ownerEmail = 'someone.else@example.com'; // the owner address, but no admin_users row
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
 
@@ -232,6 +234,23 @@ describe('admin reset — request code', () => {
     expect(logText()).toContain('"event":"admin_reset.ineligible"');
     expect(logText()).toContain('"reason":"not_registered"');
     expect(logText()).not.toContain('someone.else@example.com');
+  });
+
+  it('registered but non-owner admin email: same generic response, no code, no send', async () => {
+    db.admins.push({ id: 2, email: 'second.admin@example.com', is_active: 1, password_hash: 'x' });
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const res = await call(admin.requestAdminPasswordReset, { email: 'second.admin@example.com' });
+
+    expect(res.body).toEqual({ ok: true, message: admin.ADMIN_RESET_GENERIC });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(db.codes).toHaveLength(0);
+    expect(logText()).toContain('"reason":"not_owner_email"');
+    expect(logText()).not.toContain('second.admin@example.com');
+    // A code for a non-owner address can never set an admin password.
+    const reset = await call(admin.resetAdminPassword, { email: 'second.admin@example.com', code: '123456', password: 'brand-new-password-1' });
+    expect(reset.statusCode).toBe(400);
   });
 
   it('inactive admin: treated like an unregistered email', async () => {

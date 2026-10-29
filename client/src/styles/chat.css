@@ -1748,3 +1748,191 @@
 .cattachment__name { display:flex; align-items:center; gap:7px; overflow-wrap:anywhere; font-weight:600; }
 .cattachment small { opacity:.75; }
 .cattachment .clink { display:inline-flex; align-items:center; gap:5px; justify-self:start; }
+
+/* =====================================================================
+   "Attachment too large" — premium in-app dialog (replaces window.alert)
+   ===================================================================== */
+.cattach-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(2, 9, 30, 0.62);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  animation: cattach-fade-in 0.2s ease-out both;
+}
+
+.cattach-dialog__box {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(540px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: 40px clamp(20px, 6vw, 40px) 30px;
+  border-radius: 22px;
+  border: 1px solid rgba(86, 150, 255, 0.6);
+  background:
+    radial-gradient(420px 260px at 50% 0%, rgba(38, 104, 230, 0.38), transparent 70%),
+    linear-gradient(180deg, #0c2766 0%, #081c4c 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 0 42px -6px rgba(36, 120, 255, 0.55),
+    0 34px 80px -24px rgba(0, 6, 26, 0.95);
+  color: var(--c-text, #f2f6ff);
+  text-align: center;
+  animation: cattach-pop-in 0.24s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.cattach-dialog.is-closing {
+  animation: cattach-fade-out 0.18s ease-in both;
+}
+
+.cattach-dialog.is-closing .cattach-dialog__box {
+  animation: cattach-pop-out 0.18s ease-in both;
+}
+
+.cattach-dialog__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #dfe8ff;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.cattach-dialog__close:hover {
+  background: rgba(80, 130, 230, 0.2);
+  color: #fff;
+}
+
+.cattach-dialog__dots span {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2f7bff;
+  box-shadow: 0 0 10px 1px rgba(47, 123, 255, 0.75);
+}
+
+.cattach-dialog__dots span:nth-child(1) { top: 64px; left: calc(50% + 116px); }
+.cattach-dialog__dots span:nth-child(2) { top: 112px; left: calc(50% - 132px); width: 5px; height: 5px; }
+.cattach-dialog__dots span:nth-child(3) { top: 114px; left: calc(50% + 104px); width: 4px; height: 4px; opacity: 0.75; }
+.cattach-dialog__dots span:nth-child(4) { top: 160px; left: calc(50% - 104px); width: 3px; height: 3px; opacity: 0.55; }
+
+.cattach-dialog__icon {
+  display: grid;
+  place-items: center;
+  width: 132px;
+  height: 132px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(110, 170, 255, 0.4);
+  background: radial-gradient(circle at 50% 35%, #1a4aa8 0%, #0f2f78 55%, #0a2160 100%);
+  box-shadow:
+    0 0 0 10px rgba(30, 90, 210, 0.08),
+    0 0 46px -4px rgba(40, 120, 255, 0.6),
+    inset 0 2px 0 rgba(255, 255, 255, 0.08);
+}
+
+.cattach-dialog__art {
+  width: 70px;
+  height: 70px;
+  filter: drop-shadow(0 6px 10px rgba(0, 10, 40, 0.45));
+}
+
+.cattach-dialog__title {
+  margin: 0;
+  font-size: clamp(1.4rem, 3.6vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.cattach-dialog__text {
+  margin: 10px 0 22px;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: #d3def8;
+}
+
+.cattach-dialog__limit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: min(304px, 100%);
+  margin: 0 0 22px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(110, 160, 255, 0.3);
+  background: rgba(6, 20, 58, 0.6);
+  font-size: 0.95rem;
+  color: #e6edff;
+}
+
+.cattach-dialog__limit .icon {
+  flex: none;
+  color: #c4d5ff;
+}
+
+.cattach-dialog__ok {
+  width: min(304px, 100%);
+  min-height: 54px;
+  border: 1px solid rgba(120, 180, 255, 0.45);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #2d8eff 0%, #1061f0 100%);
+  color: #fff;
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 14px 30px -12px rgba(29, 120, 255, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+}
+
+.cattach-dialog__ok:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.cattach-dialog__ok:focus-visible,
+.cattach-dialog__close:focus-visible {
+  outline: 2px solid #9cd0ff;
+  outline-offset: 3px;
+}
+
+@keyframes cattach-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cattach-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes cattach-pop-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes cattach-pop-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(6px) scale(0.97); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cattach-dialog,
+  .cattach-dialog__box,
+  .cattach-dialog.is-closing,
+  .cattach-dialog.is-closing .cattach-dialog__box {
+    animation: none;
+  }
+  .cattach-dialog__ok:hover {
+    transform: none;
+  }
+}

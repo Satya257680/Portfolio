@@ -8,6 +8,7 @@ import TopBar from './TopBar.jsx';
 import ChatWindow from './ChatWindow.jsx';
 import { GroupInfoDialog, NewGroupDialog, ReportDialog } from './Dialogs.jsx';
 import Sidebar from './Sidebar.jsx';
+import { ATTACHMENT_MESSAGES } from './attachments.js';
 import { clientId, mergeMessages } from './chatUtils.js';
 
 const MOBILE_QUERY = '(max-width: 760px)';
@@ -23,7 +24,10 @@ function readDraftFromContact() {
   }
 }
 
-export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
+// `embedded` renders the chat inside the admin panel (no top bar or hamburger menu; the panel's own
+// sidebar provides navigation). `scope` limits the list to 'direct' (visitor chats) or 'group'
+// (the owner's private groups); the server still only returns conversations the caller belongs to.
+export default function ChatApp({ mode, token, me, onSignOut, onAuthLost, embedded = false, scope = null, initialConversationId = null, onUnreadChange = null }) {
   const isAdmin = mode === 'admin';
   const myId = me.user.id;
 
@@ -77,6 +81,7 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
       if (!silent) setListState((s) => ({ ...s, loading: true, error: '' }));
       try {
         const params = new URLSearchParams({ filter: f });
+        if (scope) params.set('type', scope);
         if (q.trim()) params.set('q', q.trim());
         const data = await call(`/api/chat/conversations?${params}`);
         setConversations(data.conversations);
@@ -87,7 +92,7 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
         return null;
       }
     },
-    [call],
+    [call, scope],
   );
 
   const loadDetail = useCallback(
@@ -152,8 +157,8 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
       const list = await loadConversations();
       if (firstLoad.current && list) {
         firstLoad.current = false;
-        const params = new URLSearchParams(window.location.search);
-        const deepLink = Number(params.get('c'));
+        const params = new URLSearchParams(embedded ? '' : window.location.search);
+        const deepLink = embedded ? Number(initialConversationId) : Number(params.get('c'));
         if (isAdmin && params.get('view') === 'contact') setView('contact');
         if (deepLink && list.some((c) => c.id === deepLink)) setActiveId(deepLink);
         else if (!isMobile() && list.length && (mode === 'visitor' || list[0].unread)) setActiveId(list[0].id);
@@ -161,7 +166,7 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
       }
     }, query ? 300 : 0);
     return () => window.clearTimeout(t);
-  }, [filter, query, loadConversations, isAdmin, mode, initialDraft]);
+  }, [filter, query, loadConversations, isAdmin, mode, initialDraft, embedded, initialConversationId]);
 
   // Opening a conversation loads its details and latest messages.
   useEffect(() => {
@@ -321,9 +326,11 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
   // Unread count in the tab title.
   const totalUnread = useMemo(() => conversations.reduce((n, c) => n + (c.unread || 0), 0), [conversations]);
   useEffect(() => {
+    onUnreadChange?.(totalUnread);
+    if (embedded) return; // the admin panel manages its own title
     const base = isAdmin ? 'Admin · Portfolio Chat — Satyajit Nayak' : 'Portfolio Chat — Satyajit Nayak';
     document.title = totalUnread ? `(${totalUnread}) ${base}` : base;
-  }, [totalUnread, isAdmin]);
+  }, [totalUnread, isAdmin, embedded, onUnreadChange]);
 
   // ---------- actions ----------
   const postMessage = useCallback(
@@ -376,11 +383,21 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
     [myId, me.user.name, postMessage],
   );
 
+  // Throws an Error carrying { status, code } so the window can tell the size limit
+  // (code ATTACHMENT_TOO_LARGE → attachment dialog) apart from every other failure (toast).
   const uploadAttachment = useCallback(async (conversationId, file) => {
     const url = `${API_BASE}/api/chat/conversations/${conversationId}/attachments?name=${encodeURIComponent(file.name)}&type=${encodeURIComponent(file.type || 'application/octet-stream')}`;
-    const response = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/octet-stream' }, body: file });
+    let response;
+    try {
+      response = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/octet-stream' }, body: file });
+    } catch {
+      throw Object.assign(new Error(ATTACHMENT_MESSAGES.network), { status: 0, code: 'NETWORK' });
+    }
     const data = await response.json().catch(() => ({}));
-    if (!response.ok || data.ok === false) throw new Error(data.message || `Upload failed (${response.status}).`);
+    if (response.status === 401) onAuthLost();
+    if (!response.ok || data.ok === false) {
+      throw Object.assign(new Error(data.message || `Upload failed (${response.status}).`), { status: response.status, code: data.code || null });
+    }
     setMessages((m) => ({ ...m, [conversationId]: { ...(m[conversationId] || { items: [], loaded: true }), items: mergeMessages(m[conversationId]?.items || [], [data.message]) } }));
     setConversations((list) => {
       const idx = list.findIndex((c) => c.id === conversationId);
@@ -390,7 +407,7 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
     });
     showToast('Attachment sent.');
     return true;
-  }, [token, showToast]);
+  }, [token, showToast, onAuthLost]);
 
   const downloadAttachment = useCallback(async (attachment) => {
     try {
@@ -558,8 +575,8 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
   );
 
   return (
-    <div className={`chat-shell ${mainOpen ? 'chat-shell--main' : 'chat-shell--list'}`}>
-      <TopBar mode={mode} menu={menu} ownerOnline={isAdmin ? connected : ownerOnline} />
+    <div className={`chat-shell ${embedded ? 'chat-shell--embedded' : ''} ${mainOpen ? 'chat-shell--main' : 'chat-shell--list'}`}>
+      {embedded ? null : <TopBar mode={mode} menu={menu} ownerOnline={isAdmin ? connected : ownerOnline} />}
       {!online || (!connected && !listState.loading) ? (
         <p className="cbanner" role="status">
           {!online ? 'You are offline — messages will send when you reconnect.' : 'Reconnecting… updates every few seconds until the live connection is back.'}
@@ -568,6 +585,7 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
       <div className="chat-body-grid">
         <Sidebar
           isAdmin={isAdmin}
+          scope={scope}
           myId={myId}
           conversations={conversations}
           listState={listState}
@@ -582,7 +600,7 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
           onQuery={setQuery}
           onOpen={openConversation}
           onRetry={() => loadConversations()}
-          onNewGroup={isAdmin ? () => setDialog({ type: 'newGroup' }) : null}
+          onNewGroup={isAdmin && scope !== 'direct' ? () => setDialog({ type: 'newGroup' }) : null}
         />
         <main className="cmain" aria-label="Conversation">
           {view === 'contact' ? (
@@ -606,7 +624,8 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
               initialDraft={mode === 'visitor' ? initialDraft : ''}
               onBack={() => setActiveId(null)}
               onSend={(body) => send(active.id, body)}
-              onUpload={(file) => uploadAttachment(active.id, file).catch((err) => showToast(err.message))}
+              onUpload={(file) => uploadAttachment(active.id, file)}
+              onNotice={showToast}
               onDownload={downloadAttachment}
               onRetry={(p) => retry(active.id, p)}
               onDiscard={(p) => discard(active.id, p)}
@@ -623,13 +642,17 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
               <span className="cempty__icon" aria-hidden="true">
                 <Icon name="chat" size={40} />
               </span>
-              <h2>{isAdmin ? 'Portfolio Chat inbox' : 'Your private chat'}</h2>
+              <h2>{scope === 'group' ? 'My private conversations' : isAdmin ? 'Portfolio Chat inbox' : 'Your private chat'}</h2>
               <p>
-                {isAdmin
+                {scope === 'group'
                   ? conversations.length
                     ? 'Select a conversation to read and reply.'
-                    : 'No conversations yet. New visitor chats appear here instantly.'
-                  : 'Select the conversation to start messaging Satyajit.'}
+                    : 'No private groups yet. Use + to create one with verified chat users.'
+                  : isAdmin
+                    ? conversations.length
+                      ? 'Select a conversation to read and reply.'
+                      : 'No conversations yet. New visitor chats appear here instantly.'
+                    : 'Select the conversation to start messaging Satyajit.'}
               </p>
               <p className="cempty__lock">
                 <Icon name="lock" size={14} /> Messages are private to the members of each conversation.

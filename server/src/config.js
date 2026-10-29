@@ -87,9 +87,19 @@ export const config = {
   },
 
   admin: {
+    // The ONLY email allowed to hold an admin session (the portfolio owner). Sign-in, password reset,
+    // `npm run admin:create` and the env bootstrap all refuse any other address, and every admin
+    // request re-checks it on the server. Defaults to the owner email above.
+    ownerEmail: (process.env.ADMIN_OWNER_EMAIL || ownerEmail).trim().toLowerCase(),
     // Optional one-time bootstrap: used only when no admin user exists yet.
     bootstrapEmail: (process.env.ADMIN_EMAIL || '').trim().toLowerCase(),
     bootstrapPassword: process.env.ADMIN_PASSWORD || '',
+  },
+
+  attachments: {
+    // Fixed product limit: "10 MB or smaller". A file of exactly this many bytes is accepted.
+    // Enforced on the server (Content-Length pre-check + body parser + controller) and mirrored by the client.
+    maxBytes: 10 * 1024 * 1024,
   },
 };
 
