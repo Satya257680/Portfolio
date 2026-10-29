@@ -1718,3 +1718,14 @@
     animation: none;
   }
 }
+
+
+/* Password controls and secure chat attachments */
+.cpassword-row { display:flex; align-items:stretch; gap:8px; }
+.cpassword-row input { flex:1; min-width:0; }
+.cpassword-toggle { border:1px solid var(--c-border, #38527f); border-radius:10px; background:rgba(255,255,255,.06); color:inherit; padding:0 12px; cursor:pointer; font:inherit; }
+.cfile-input { display:none; }
+.cattachment { display:grid; gap:5px; min-width:150px; }
+.cattachment__name { display:flex; align-items:center; gap:7px; overflow-wrap:anywhere; font-weight:600; }
+.cattachment small { opacity:.75; }
+.cattachment .clink { display:inline-flex; align-items:center; gap:5px; justify-self:start; }

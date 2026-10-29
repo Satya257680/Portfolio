@@ -208,3 +208,43 @@ export function ReportsPanel({ call, onBack, onOpen }) {
     </section>
   );
 }
+
+
+// Account directory: displays account metadata only, never password hashes or plaintext passwords.
+export function PasswordManagement({ call, onBack }) {
+  const [q, setQ] = useState('');
+  const [state, setState] = useState({ loading: true, error: '', users: [] });
+  const load = useCallback(async () => {
+    setState((s) => ({ ...s, loading: true, error: '' }));
+    try {
+      const params = new URLSearchParams(); if (q.trim()) params.set('q', q.trim());
+      const data = await call(`/api/admin/users?${params}`);
+      setState({ loading: false, error: '', users: data.users || [] });
+    } catch (err) { setState((s) => ({ ...s, loading: false, error: err.message })); }
+  }, [call, q]);
+  useEffect(() => { const t = window.setTimeout(load, q ? 250 : 0); return () => window.clearTimeout(t); }, [load, q]);
+  const toggle = async (user) => {
+    const blocked = user.status !== 'blocked';
+    if (blocked && !window.confirm(`Permanently block ${user.email} from using chat? You can unblock the account later.`)) return;
+    try {
+      await call(`/api/admin/users/${user.id}/block`, { method: 'POST', body: { blocked } });
+      setState((s) => ({ ...s, users: s.users.map((u) => u.id === user.id ? { ...u, status: blocked ? 'blocked' : 'active' } : u) }));
+    } catch (err) { setState((s) => ({ ...s, error: err.message })); }
+  };
+  return <section className="cpanel" aria-label="Password management">
+    <PanelHead title="Password Management" subtitle="Registered accounts · passwords are securely hashed" onBack={onBack}>
+      <button type="button" className="cicon-btn" onClick={load} aria-label="Refresh" title="Refresh"><Icon name="refresh" size={20} /></button>
+    </PanelHead>
+    <div className="cpanel__tools"><input type="search" className="cinput" placeholder="Search name or email…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search accounts" /></div>
+    <div className="cpanel__scroll">
+      <p className="cnote">For security, this page never displays users' passwords. Users can reset their own password using the email verification flow on the chat sign-in page.</p>
+      {state.error && <p className="cstatus cstatus--error" role="alert">{state.error}</p>}
+      {state.loading && !state.users.length && <p className="cpanel__state">Loading accounts…</p>}
+      {!state.loading && !state.users.length && <p className="cpanel__state">No registered accounts found.</p>}
+      <ul className="clog">{state.users.map((u) => <li key={u.id} className="clog__item">
+        <span className="clog__main"><strong>{u.name}</strong><small>{u.email}</small><small>Verified: {u.verifiedAt ? fullTime(u.verifiedAt) : 'No'} · Status: {u.status}</small></span>
+        <button type="button" className={`cbtn cbtn--small ${u.status === 'blocked' ? 'cbtn--primary' : 'cbtn--ghost'}`} onClick={() => toggle(u)}>{u.status === 'blocked' ? 'Unblock' : 'Block'}</button>
+      </li>)}</ul>
+    </div>
+  </section>;
+}

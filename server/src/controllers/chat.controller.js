@@ -6,6 +6,7 @@ import {
   addMembers,
   createGroup,
   createMessage,
+  toMessage,
   findVerifiedUsersByEmail,
   getConversationDetail,
   getOrCreateDirect,
@@ -132,6 +133,46 @@ export const postMessage = handle(async (req, res) => {
   }
   // "saved" means stored in the database; email notification status is tracked separately.
   res.status(duplicate ? 200 : 201).json({ ok: true, message, duplicate, saved: true });
+});
+
+// POST /api/chat/conversations/:id/attachments?name=...&type=... — raw binary upload, max 10 MB.
+export const postAttachment = handle(async (req, res) => {
+  const id = idParam(req);
+  const membership = await requireMembership(id, req.auth.userId);
+  if (membership.status === 'closed' && !req.auth.isOwner) throw new ChatError(403, 'This conversation has been closed.');
+  const data = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+  if (!data.length) throw new ChatError(400, 'Choose a file to attach.');
+  if (data.length > 10 * 1024 * 1024) throw new ChatError(413, 'Attachments must be 10 MB or smaller.');
+  const original = String(req.query.name || 'attachment').split(/[\\/]/).pop().replace(/[\r\n\u0000-\u001f]/g, '').trim().slice(0, 240) || 'attachment';
+  const mime = String(req.query.type || 'application/octet-stream').slice(0, 150).toLowerCase();
+  const ext = original.includes('.') ? original.split('.').pop().toLowerCase() : '';
+  const blockedExt = new Set(['mp4','mov','avi','mkv','webm','mpeg','mpg','m4v','3gp','wmv','flv','exe','dll','bat','cmd','ps1','sh','js','mjs','html','htm','svg','apk','jar','iso','com','scr']);
+  if (mime.startsWith('video/') || blockedExt.has(ext)) throw new ChatError(415, 'This file type is not allowed. Video and executable/script files are blocked.');
+  const { message } = await createMessage({ conversationId: id, senderId: req.auth.userId, body: original, type: 'file', reopen: !req.auth.isOwner });
+  const pool = getPool();
+  await pool.query('INSERT INTO chat_attachments (conversation_id, message_id, sender_id, file_name, mime_type, file_size, file_data) VALUES (?, ?, ?, ?, ?, ?, ?)', [id, message.id, req.auth.userId, original, mime, data.length, data]);
+  const [rows] = await pool.query(`SELECT msg.id, msg.conversation_id, msg.sender_id, u.display_name AS sender_name, msg.body, msg.message_type, msg.client_message_id, msg.created_at, att.id AS attachment_id, att.file_name AS attachment_name, att.mime_type AS attachment_mime, att.file_size AS attachment_size FROM chat_messages msg JOIN chat_users u ON u.id = msg.sender_id JOIN chat_attachments att ON att.message_id = msg.id WHERE msg.id = ?`, [message.id]);
+  const enriched = toMessage(rows[0]);
+  await emitToConversation(id, 'message:new', { conversationId: id, message: enriched });
+  const title = membership.type === 'group' ? membership.title : req.auth.isOwner ? config.owner.name : req.auth.name;
+  notifyNewMessage({ conversation: { id, type: membership.type, title }, message: enriched, sender: req.auth }).catch((err) => console.error('[notify] failed:', err?.message));
+  res.status(201).json({ ok: true, message: enriched, saved: true });
+});
+
+// GET /api/chat/attachments/:id/download — only current conversation members can download.
+export const downloadAttachment = handle(async (req, res) => {
+  const attachmentId = parseId(req.params.attachmentId);
+  if (!attachmentId) throw new ChatError(404, 'Attachment not found.');
+  const [rows] = await getPool().query('SELECT id, conversation_id, file_name, mime_type, file_size, file_data FROM chat_attachments WHERE id = ? LIMIT 1', [attachmentId]);
+  const file = rows[0];
+  if (!file) throw new ChatError(404, 'Attachment not found.');
+  await requireMembership(file.conversation_id, req.auth.userId);
+  res.setHeader('Content-Type', file.mime_type || 'application/octet-stream');
+  res.setHeader('Content-Length', String(file.file_size));
+  const fallbackName = String(file.file_name).replace(/[^\x20-\x7E]|["\\\r\n]/g, '_');
+  res.setHeader('Content-Disposition', `attachment; filename="${fallbackName}"; filename*=UTF-8''${encodeURIComponent(file.file_name)}`);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.send(file.file_data);
 });
 
 // PATCH /api/chat/conversations/:id/read  { upTo? }

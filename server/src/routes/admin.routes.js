@@ -15,6 +15,10 @@ const loginLimiter = rateLimit({
 });
 
 router.post('/auth/login', loginLimiter, admin.login);
+router.post('/auth/request-reset', loginLimiter, admin.requestAdminPasswordReset);
+router.post('/auth/reset-password', loginLimiter, admin.resetAdminPassword);
+router.post('/auth/request-reset', loginLimiter, admin.requestAdminPasswordReset);
+router.post('/auth/reset-password', loginLimiter, admin.resetAdminPassword);
 
 // Everything below requires a server-validated admin session.
 router.use(requireAdmin);

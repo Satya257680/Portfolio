@@ -177,6 +177,29 @@ export const migrations = [
       ) ${T}`,
     ],
   },
+  {
+    id: '005_chat_passwords_and_attachments',
+    statements: [
+      `CREATE TABLE IF NOT EXISTS chat_attachments (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        conversation_id INT UNSIGNED NOT NULL,
+        message_id BIGINT UNSIGNED NOT NULL,
+        sender_id INT UNSIGNED NOT NULL,
+        file_name VARCHAR(255) NOT NULL,
+        mime_type VARCHAR(150) NOT NULL,
+        file_size INT UNSIGNED NOT NULL,
+        file_data LONGBLOB NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_attachment_conversation (conversation_id, id),
+        UNIQUE KEY uq_attachment_message (message_id),
+        CONSTRAINT fk_attachment_conversation FOREIGN KEY (conversation_id) REFERENCES chat_conversations (id) ON DELETE CASCADE,
+        CONSTRAINT fk_attachment_message FOREIGN KEY (message_id) REFERENCES chat_messages (id) ON DELETE CASCADE,
+        CONSTRAINT fk_attachment_sender FOREIGN KEY (sender_id) REFERENCES chat_users (id) ON DELETE CASCADE
+      ) ${T}`
+    ],
+  }
+
 ];
 
 // Applies pending migrations in order and records them in schema_migrations.
@@ -193,6 +216,12 @@ export async function runMigrations(conn, log = console.log) {
   const ran = [];
   for (const m of migrations) {
     if (applied.has(m.id)) continue;
+    if (m.id === '005_chat_passwords_and_attachments') {
+      const [cols] = await conn.query(
+        `SELECT COUNT(*) AS n FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'chat_users' AND column_name = 'password_hash'`,
+      );
+      if (Number(cols[0].n) === 0) await conn.query('ALTER TABLE chat_users ADD COLUMN password_hash VARCHAR(255) NULL');
+    }
     for (const sql of m.statements) {
       await conn.query(sql);
     }

@@ -22,14 +22,17 @@ export function toMessage(r) {
     type: r.message_type,
     clientMessageId: r.client_message_id || null,
     createdAt: r.created_at,
+    ...(r.attachment_id ? { attachment: { id: Number(r.attachment_id), name: r.attachment_name, mimeType: r.attachment_mime, size: Number(r.attachment_size) } } : {}),
   };
 }
 
 const MESSAGE_SELECT = `
   SELECT msg.id, msg.conversation_id, msg.sender_id, u.display_name AS sender_name, msg.body,
-         msg.message_type, msg.client_message_id, msg.created_at
+         msg.message_type, msg.client_message_id, msg.created_at,
+         att.id AS attachment_id, att.file_name AS attachment_name, att.mime_type AS attachment_mime, att.file_size AS attachment_size
   FROM chat_messages msg
-  JOIN chat_users u ON u.id = msg.sender_id`;
+  JOIN chat_users u ON u.id = msg.sender_id
+  LEFT JOIN chat_attachments att ON att.message_id = msg.id`;
 
 // Active membership + conversation, or null when the user is not (or no longer) a member.
 export async function getMembership(conversationId, userId) {

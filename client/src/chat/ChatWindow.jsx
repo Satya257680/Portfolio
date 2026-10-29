@@ -59,6 +59,8 @@ export default function ChatWindow({
   initialDraft,
   onBack,
   onSend,
+  onUpload,
+  onDownload,
   onRetry,
   onDiscard,
   onLoadOlder,
@@ -71,6 +73,8 @@ export default function ChatWindow({
   const items = thread?.items || [];
   const [text, setText] = useState(() => drafts.get(c.id) || initialDraft || '');
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const [uploadBusy, setUploadBusy] = useState(false);
+  const fileInputRef = useRef(null);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
   const stickToBottom = useRef(true);
@@ -123,6 +127,16 @@ export default function ChatWindow({
     el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
   };
   useEffect(autoGrow, [text]);
+
+  const chooseFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { window.alert('Attachments must be 10 MB or smaller.'); return; }
+    if (file.type?.startsWith('video/') || /\.(mp4|mov|avi|mkv|webm|mpeg|mpg|m4v|3gp|wmv|flv)$/i.test(file.name)) { window.alert('Video attachments are not allowed.'); return; }
+    setUploadBusy(true);
+    try { await onUpload(file); } finally { setUploadBusy(false); }
+  };
 
   const submit = (e) => {
     e?.preventDefault();
@@ -317,7 +331,13 @@ export default function ChatWindow({
                           {m.senderName}
                         </span>
                       ) : null}
-                      <span className="cbubble__text">{m.body}</span>
+                      {m.type === 'file' && m.attachment ? (
+                        <div className="cattachment">
+                          <span className="cattachment__name"><Icon name="file" size={18} /> {m.attachment.name}</span>
+                          <small>{Math.max(1, Math.round(m.attachment.size / 1024))} KB</small>
+                          <button type="button" className="clink" onClick={() => onDownload(m.attachment)}><Icon name="download" size={15} /> Download</button>
+                        </div>
+                      ) : <span className="cbubble__text">{m.body}</span>}
                       <span className="cbubble__meta">
                         <time dateTime={new Date(m.createdAt).toISOString()}>{timeOf(m.createdAt)}</time>
                         {mine ? <Ticks status={tick} /> : null}
@@ -351,6 +371,10 @@ export default function ChatWindow({
         <form className="ccomposer" onSubmit={submit}>
           <div className="ccomposer__field">
             <div className="cemoji">
+              <input ref={fileInputRef} type="file" className="cfile-input" onChange={chooseFile} aria-label="Choose attachment" />
+              <button type="button" className="cicon-btn cicon-btn--soft" aria-label="Attach file" title="Attach file (max 10 MB, no video)" onClick={() => fileInputRef.current?.click()} disabled={blocked || uploadBusy}>
+                <Icon name="paperclip" size={21} />
+              </button>
               <button
                 type="button"
                 className="cicon-btn cicon-btn--soft"

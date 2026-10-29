@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import * as auth from '../controllers/chatAuth.controller.js';
 import * as chat from '../controllers/chat.controller.js';
@@ -26,6 +26,10 @@ const writeLimiter = limiter(60, 15, 'Too many requests. Please try again later.
 router.get('/status', auth.chatStatus);
 router.post('/auth/request-verification', codeRequestLimiter, auth.requestVerification);
 router.post('/auth/verify', verifyLimiter, auth.verifyCode);
+router.post('/auth/login', verifyLimiter, auth.loginVisitor);
+router.post('/auth/set-password', verifyLimiter, auth.setVisitorPassword);
+router.post('/auth/request-reset', codeRequestLimiter, auth.requestPasswordReset);
+router.post('/auth/reset-password', verifyLimiter, auth.resetVisitorPassword);
 
 // Authenticated (visitor or admin session)
 router.use(requireChatAuth);
@@ -39,6 +43,8 @@ router.get('/conversations/:id', chat.getConversation);
 router.patch('/conversations/:id', writeLimiter, chat.patchGroup);
 router.get('/conversations/:id/messages', chat.getMessages);
 router.post('/conversations/:id/messages', messageLimiter, chat.postMessage);
+router.post('/conversations/:id/attachments', writeLimiter, express.raw({ type: 'application/octet-stream', limit: '10mb' }), chat.postAttachment);
+router.get('/attachments/:attachmentId/download', chat.downloadAttachment);
 router.patch('/conversations/:id/read', chat.patchRead);
 router.patch('/conversations/:id/unread', chat.patchUnread);
 router.patch('/conversations/:id/mute', writeLimiter, chat.patchMute);

@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 import Icon from '../components/Icon.jsx';
 import { contact } from '../data/portfolioData.js';
 import { API_BASE, CHAT_DRAFT_KEY, api } from '../lib/api.js';
-import { ContactInbox, EmailLog, ReportsPanel } from './AdminPanels.jsx';
+import { ContactInbox, EmailLog, ReportsPanel, PasswordManagement } from './AdminPanels.jsx';
 import TopBar from './TopBar.jsx';
 import ChatWindow from './ChatWindow.jsx';
 import { GroupInfoDialog, NewGroupDialog, ReportDialog } from './Dialogs.jsx';
@@ -376,6 +376,32 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
     [myId, me.user.name, postMessage],
   );
 
+  const uploadAttachment = useCallback(async (conversationId, file) => {
+    const url = `${API_BASE}/api/chat/conversations/${conversationId}/attachments?name=${encodeURIComponent(file.name)}&type=${encodeURIComponent(file.type || 'application/octet-stream')}`;
+    const response = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/octet-stream' }, body: file });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok === false) throw new Error(data.message || `Upload failed (${response.status}).`);
+    setMessages((m) => ({ ...m, [conversationId]: { ...(m[conversationId] || { items: [], loaded: true }), items: mergeMessages(m[conversationId]?.items || [], [data.message]) } }));
+    setConversations((list) => {
+      const idx = list.findIndex((c) => c.id === conversationId);
+      if (idx < 0) return list;
+      const c = { ...list[idx], lastMessage: { ...data.message, body: `📎 ${file.name}` }, lastActivityAt: data.message.createdAt };
+      return [c, ...list.slice(0, idx), ...list.slice(idx + 1)];
+    });
+    showToast('Attachment sent.');
+    return true;
+  }, [token, showToast]);
+
+  const downloadAttachment = useCallback(async (attachment) => {
+    try {
+      const response = await fetch(`${API_BASE}/api/chat/attachments/${attachment.id}/download`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!response.ok) { const data = await response.json().catch(() => ({})); throw new Error(data.message || 'Could not download attachment.'); }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = attachment.name || 'attachment'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    } catch (err) { showToast(err.message); }
+  }, [token, showToast]);
+
   const retry = useCallback(
     (conversationId, pending) => {
       setMessages((m) => ({
@@ -475,6 +501,7 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
         { key: 'contact', icon: 'inbox', label: 'Contact form inbox', onClick: () => { setView('contact'); setActiveId(null); } },
         { key: 'emails', icon: 'mail', label: 'Email delivery log', onClick: () => { setView('emails'); setActiveId(null); } },
         { key: 'reports', icon: 'flag', label: 'Reports', onClick: () => { setView('reports'); setActiveId(null); } },
+        { key: 'passwords', icon: 'lock', label: 'Password Management', onClick: () => { setView('passwords'); setActiveId(null); } },
         { key: 'site', icon: 'globe', label: 'View portfolio', href: '/' },
         { key: 'signout', icon: 'logout', label: 'Sign out', onClick: onSignOut },
       ]
@@ -564,6 +591,8 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
             <EmailLog call={call} onBack={() => setView('chats')} />
           ) : view === 'reports' ? (
             <ReportsPanel call={call} onBack={() => setView('chats')} onOpen={openConversation} />
+          ) : view === 'passwords' ? (
+            <PasswordManagement call={call} onBack={() => setView('chats')} />
           ) : active ? (
             <ChatWindow
               key={active.id}
@@ -577,6 +606,8 @@ export default function ChatApp({ mode, token, me, onSignOut, onAuthLost }) {
               initialDraft={mode === 'visitor' ? initialDraft : ''}
               onBack={() => setActiveId(null)}
               onSend={(body) => send(active.id, body)}
+              onUpload={(file) => uploadAttachment(active.id, file).catch((err) => showToast(err.message))}
+              onDownload={downloadAttachment}
               onRetry={(p) => retry(active.id, p)}
               onDiscard={(p) => discard(active.id, p)}
               onLoadOlder={() => {
