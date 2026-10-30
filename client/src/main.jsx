@@ -4,6 +4,7 @@ import App from './App.jsx';
 import './styles/tokens.css';
 import './styles/global.css';
 import './styles/components.css';
+import './styles/premium.css';
 import './styles/welcome.css';
 
 // The chat (/chat, visitors) and the owner-only admin panel (/admin) are separate pages loaded on

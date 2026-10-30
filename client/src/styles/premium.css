@@ -1,0 +1,319 @@
+/*
+ * Premium visual refinement
+ * Loaded after components.css so this file changes presentation only.
+ * Existing content, routes, interactions and component behavior remain untouched.
+ */
+
+:root,
+:root[data-theme='dark'] {
+  --bg: #090e1b;
+  --bg-band: rgba(15, 23, 42, 0.48);
+  --surface: rgba(19, 29, 49, 0.72);
+  --surface-strong: rgba(24, 36, 59, 0.9);
+  --border: rgba(148, 163, 184, 0.14);
+  --border-strong: rgba(148, 163, 184, 0.25);
+  --text: #edf2fb;
+  --text-2: #b4c0d2;
+  --text-3: #8291a8;
+  --nav-bg: rgba(9, 14, 27, 0.9);
+  --input-bg: rgba(12, 19, 33, 0.88);
+  --glow-1: rgba(37, 99, 235, 0.10);
+  --glow-2: rgba(109, 40, 217, 0.075);
+  --shadow: 0 16px 38px -28px rgba(0, 0, 0, 0.72);
+  --card-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  --grad: linear-gradient(105deg, #7799ee 0%, #8c83d9 100%);
+  --grad-text: linear-gradient(100deg, #91b4ff 0%, #a99af0 100%);
+}
+
+:root[data-theme='light'] {
+  --bg: #f5f7fb;
+  --bg-band: rgba(232, 238, 248, 0.72);
+  --surface: rgba(255, 255, 255, 0.82);
+  --surface-strong: rgba(255, 255, 255, 0.96);
+  --border: rgba(71, 85, 105, 0.12);
+  --border-strong: rgba(71, 85, 105, 0.22);
+  --text: #172033;
+  --text-2: #4b5870;
+  --text-3: #718096;
+  --nav-bg: rgba(248, 250, 253, 0.92);
+  --input-bg: rgba(255, 255, 255, 0.94);
+  --glow-1: rgba(59, 130, 246, 0.075);
+  --glow-2: rgba(124, 96, 190, 0.055);
+  --shadow: 0 16px 36px -30px rgba(30, 41, 59, 0.35);
+  --card-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  --grad: linear-gradient(105deg, #527fcf 0%, #7767bd 100%);
+  --grad-text: linear-gradient(100deg, #4777c5 0%, #7968bd 100%);
+}
+
+/* Page canvas: retain depth, remove the oversized purple/blue light pools. */
+body {
+  background-image:
+    radial-gradient(760px 460px at 88% 0%, var(--glow-1), transparent 68%),
+    radial-gradient(680px 520px at 0% 32%, var(--glow-2), transparent 70%);
+  background-attachment: fixed;
+}
+
+.section--band {
+  border-block-color: var(--border);
+  background: color-mix(in srgb, var(--bg-band) 78%, transparent);
+}
+
+/* Glass surfaces should read as material, not outlined neon panels. */
+.glass {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow), var(--card-highlight);
+  -webkit-backdrop-filter: blur(14px) saturate(118%);
+  backdrop-filter: blur(14px) saturate(118%);
+}
+
+.glass--hover.is-visible:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-strong);
+  box-shadow: 0 18px 38px -28px rgba(0, 0, 0, 0.65), var(--card-highlight);
+}
+
+:root[data-theme='light'] .glass {
+  background: rgba(255, 255, 255, 0.76);
+}
+
+/* Navigation: calm, crisp and consistently translucent. */
+.navbar {
+  border-bottom-color: var(--border);
+  box-shadow: 0 8px 24px -24px rgba(0, 0, 0, 0.6);
+}
+
+.navbar--scrolled {
+  box-shadow: 0 12px 30px -26px rgba(0, 0, 0, 0.75);
+}
+
+.brand__avatar {
+  background: linear-gradient(145deg, #7da6ed, #9586d7);
+  box-shadow: 0 0 0 1px rgba(143, 166, 221, 0.18);
+}
+
+.navbar__links a.is-active {
+  color: var(--text);
+  background: color-mix(in srgb, var(--blue) 8%, transparent);
+}
+
+.navbar__links a.is-active::after {
+  height: 2px;
+  background: #7fa6ed;
+  box-shadow: none;
+}
+
+.theme-toggle {
+  border-color: var(--border-strong);
+  background: var(--surface);
+}
+
+.theme-toggle__knob {
+  background: linear-gradient(145deg, #789ce0, #8b80ce);
+  box-shadow: none;
+}
+
+/* Hero: retain the layout and photography; reduce decorative light effects. */
+.hero {
+  padding-bottom: 44px;
+}
+
+.hero__waves {
+  opacity: 0.16;
+}
+
+:root[data-theme='light'] .hero__waves {
+  opacity: 0.10;
+}
+
+.hero__role {
+  color: #83a9ed;
+}
+
+:root[data-theme='light'] .hero__role {
+  color: #416fb7;
+}
+
+.hero__photo {
+  padding: 2px;
+  background: linear-gradient(145deg, #83a9ed, #8f83ce);
+  box-shadow: 0 18px 44px -30px rgba(0, 0, 0, 0.75);
+}
+
+.hero__photo img {
+  border-radius: calc(var(--r-xl) - 2px);
+}
+
+.hero__chip {
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 30px -24px rgba(0, 0, 0, 0.7);
+}
+
+.hero__chip-icon {
+  border-color: var(--border-strong);
+  color: #91ace4;
+}
+
+.badge-available {
+  color: #35b879;
+  background: rgba(34, 197, 94, 0.055);
+  border-color: rgba(34, 197, 94, 0.22);
+}
+
+.dot {
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.11);
+}
+
+/* Section headings and icon tiles: restrained accent treatment. */
+.section-title__icon,
+.section-title__icon--medal {
+  filter: none;
+}
+
+.section-title__icon {
+  color: #83a9ed;
+}
+
+.section-title__icon--medal {
+  color: #9587d4;
+}
+
+.section-title h2::after {
+  width: 38px;
+  height: 2px;
+  background: linear-gradient(90deg, #7da2e6, #9588d4);
+}
+
+.tone-icon {
+  border-color: color-mix(in srgb, currentColor 22%, transparent);
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  box-shadow: none;
+}
+
+/* Buttons: quiet surfaces, clear hierarchy, no oversized glow. */
+.btn {
+  border-radius: 12px;
+}
+
+.btn--primary {
+  background: linear-gradient(110deg, #587fc8, #756bb5);
+  box-shadow: 0 8px 20px -16px rgba(84, 117, 190, 0.8);
+}
+
+.btn--primary:hover {
+  box-shadow: 0 12px 24px -18px rgba(84, 117, 190, 0.9);
+}
+
+.btn--outline {
+  border-color: var(--border-strong);
+  background: color-mix(in srgb, var(--surface) 76%, transparent);
+}
+
+.btn--outline:hover {
+  border-color: color-mix(in srgb, #789ce0 55%, var(--border));
+  box-shadow: 0 8px 20px -18px rgba(84, 117, 190, 0.65);
+}
+
+/* Skill chips and other compact tiles feel less like a repeated button grid. */
+.skill-card,
+.skill-item,
+.skill,
+.tech-card {
+  box-shadow: none;
+}
+
+/* Social links and icon buttons use a subtle lift rather than a glow. */
+.social-icon {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.social-icon:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: 0 8px 18px -16px rgba(0, 0, 0, 0.8);
+}
+
+.text-link {
+  color: #8eace7;
+}
+
+.text-link:hover {
+  color: #a9bde9;
+}
+
+/* Form controls and menus stay visually consistent with the new surfaces. */
+input,
+textarea,
+select {
+  accent-color: #789ce0;
+}
+
+
+@media (max-width: 1060px) {
+  .navbar__links {
+    border-color: var(--border);
+    background: var(--surface-strong);
+    box-shadow: 0 18px 40px -30px rgba(0, 0, 0, 0.65);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+  }
+}
+
+/* Keep the visual refinements accessible and restrained on touch devices. */
+@media (hover: none) {
+  .glass--hover.is-visible:hover,
+  .social-icon:hover,
+  .btn:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__waves {
+    display: none;
+  }
+}
+
+
+/* Specific portfolio components */
+.skill-chip {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  transition: transform 0.2s var(--ease), border-color 0.2s, background 0.2s;
+}
+
+.skill-chip:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  background: var(--surface-strong);
+  box-shadow: none;
+}
+
+.skill-group {
+  border-color: var(--border);
+}
+
+.job {
+  border-color: var(--border);
+}
+
+.job__present {
+  border-color: var(--border);
+  color: #8eace7;
+  background: var(--surface-strong);
+}
+
+.company-logo {
+  box-shadow: 0 8px 22px -18px rgba(0, 0, 0, 0.5);
+}
+
+.project__open:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--blue) 10%, transparent);
+}
+
+.stats {
+  border-color: var(--border);
+}
